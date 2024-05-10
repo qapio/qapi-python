@@ -19,7 +19,6 @@ class FlowActor(ThreadingActor):
         self.__sink = qapi.proxy().sink(manifest["outlets"]["Response"]).get().proxy()
 
     def transmit(self, value):
-        print("NBOM!")
         self.__sink.on_next(self.__function(value))
 
     def on_receive(self, message: Event) -> Any:
