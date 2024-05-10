@@ -11,6 +11,7 @@ from math import ceil
 from collections import namedtuple
 from .Manifest import load_qapio_manifest
 import uuid
+from .Scheduler import scheduler
 
 from . import qapi_pb2 as qapi_pb2
 from . import qapi_pb2_grpc as qapi_pb2_grpc
@@ -69,7 +70,8 @@ def concat_map(os):
         op.map(lambda x: json.loads(x.bytes[0].value[4:])),
         op.scan(partition, ([], None)),
         op.filter(lambda x: x[1] is not None),
-        op.map(lambda x: assemble_chunks([base64.b64decode(y['Bytes']) for y in x[1]]))
+        op.map(lambda x: assemble_chunks([base64.b64decode(y['Bytes']) for y in x[1]])),
+        op.subscribe_on(scheduler), op.observe_on(scheduler)
 
     )
 
