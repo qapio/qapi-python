@@ -4,7 +4,7 @@ import os
 import json
 from qapi_python.actors import Qapi as QapiActor
 
-from src.qapi_python.actors.Source import Event
+from qapi_python.actors.Source import Event
 
 
 class FlowActor(ThreadingActor):
