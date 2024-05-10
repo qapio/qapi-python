@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+option csharp_namespace = "Tdip.Qapio";
+
+package Qapi;
+
+message InputEntryDescriptor {
+  string streamId = 1;
+}
+
+message OutputEntryDescriptor {
+  string streamId = 1;
+}
+
+message Chunk {
+  string expression = 1;
+  repeated google.protobuf.Any bytes = 2;
+}
+
+message SourceRequest {
+  string expression = 1;
+}
+
+message SinkResult {
+
+}
+
+message HelloRequest {
+  string name = 1;
+}
+
+// The response message containing the greetings.
+message HelloReply {
+  string message = 1;
+}
+
+
+service Qapi {
+  rpc Sink (stream Chunk) returns (SinkResult) {}
+
+  rpc Source (SourceRequest) returns (stream Chunk) {}
+
+  rpc SayHello (HelloRequest) returns (stream HelloReply);
+}
