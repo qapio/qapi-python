@@ -100,7 +100,7 @@ class Transmitter:
 class QapioGrpcInstance:
 
     def __init__(self, endpoint: str):
-        print(load_qapio_manifest)
+
         self.__session_id = str(uuid.uuid4())
         self.__channel = channel = grpc.insecure_channel(endpoint)
 

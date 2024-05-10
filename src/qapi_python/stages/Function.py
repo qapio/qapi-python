@@ -19,6 +19,7 @@ class FlowActor(ThreadingActor):
         self.__sink = qapi.proxy().sink(manifest["outlets"]["Response"]).get().proxy()
 
     def transmit(self, value):
+        print("NBOM!")
         self.__sink.on_next(self.__function(value))
 
     def on_receive(self, message: Event) -> Any:
@@ -43,4 +44,6 @@ def function(fn):
 
     manifest = json.loads(os.read(0, manifest_length).decode('utf8'))
 
+    print(manifest)
+    
     FlowActor.start(qapi, manifest, fn)
