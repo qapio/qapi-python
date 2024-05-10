@@ -71,7 +71,7 @@ def concat_map(os):
         op.scan(partition, ([], None)),
         op.filter(lambda x: x[1] is not None),
         op.map(lambda x: assemble_chunks([base64.b64decode(y['Bytes']) for y in x[1]])),
-        op.subscribe_on(scheduler), op.observe_on(scheduler)
+        op.subscribe_on(scheduler)
 
     )
 
