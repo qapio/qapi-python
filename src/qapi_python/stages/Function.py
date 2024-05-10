@@ -43,6 +43,4 @@ def function(fn):
 
     manifest = json.loads(os.read(0, manifest_length).decode('utf8'))
 
-    print(manifest)
-
     FlowActor.start(qapi, manifest, fn)
