@@ -14,7 +14,6 @@ class FlowActor(ThreadingActor):
         self.__function = func
 
         qapi.proxy().source(manifest["inlets"]["Request"], self.actor_ref)
-        qapi.proxy().source(manifest["inlets"]["Code"], self.actor_ref)
 
         self.__sink = qapi.proxy().sink(manifest["outlets"]["Response"]).get().proxy()
 
@@ -25,9 +24,6 @@ class FlowActor(ThreadingActor):
 
         if message.inlet is self.__manifest["inlets"]["Request"]:
             self.transmit(message.value)
-
-        if message.inlet is self.__manifest["inlets"]["Code"]:
-            print(message.value)
 
 
 def function(fn):
