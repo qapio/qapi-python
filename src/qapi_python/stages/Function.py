@@ -10,7 +10,6 @@ from qapi_python.actors.Source import Event
 class FlowActor(QapiActor.Qapi):
     def __init__(self, endpoint, func, *_args: Any, **_kwargs: Any):
         super().__init__(endpoint,*_args, **_kwargs)
-        self.__manifest = self.get_manifest()
         self.__function = func
         self.__params = inspect.signature(self.__function).parameters
         self.__spread = False
