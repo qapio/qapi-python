@@ -24,7 +24,7 @@ class FlowActor(ThreadingActor):
 
     def transmit(self, value):
 
-        if self.__spread and value is dict:
+        if self.__spread and isinstance(value, dict):
             ordered_args = {param: value.get(param) for param in list(self.__params.keys())}
             self.__function(**ordered_args)
         else:
