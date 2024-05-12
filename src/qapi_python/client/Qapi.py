@@ -111,7 +111,7 @@ class Transmitter:
 class QapioGrpcInstance:
 
     def __init__(self, endpoint: str):
-
+        self.__manifest = None
         self.__session_id = str(uuid.uuid4())
         self.__channel = channel = grpc.insecure_channel(endpoint)
 
@@ -127,8 +127,11 @@ class QapioGrpcInstance:
         args = qapi_pb2.SourceRequest(expression=expression)
         return concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id)])))
 
-    @staticmethod
-    def get_manifest() -> Manifest:
+    def get_manifest(self) -> Manifest:
+
+        if self.__manifest is not None:
+            return self.__manifest
+
         manifest_length = int.from_bytes(
             os.read(0, 4),
             "little"
@@ -136,4 +139,6 @@ class QapioGrpcInstance:
 
         manifest = json.loads(os.read(0, manifest_length).decode('utf8'))
 
-        return Manifest(manifest)
+        self.__manifest = Manifest(manifest)
+
+        return self.__manifest
