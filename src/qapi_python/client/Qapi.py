@@ -12,9 +12,21 @@ from collections import namedtuple
 from .Manifest import load_qapio_manifest
 import uuid
 from .Scheduler import scheduler
-
+import os
 from . import qapi_pb2 as qapi_pb2
 from . import qapi_pb2_grpc as qapi_pb2_grpc
+
+
+class Manifest:
+
+    def __init__(self, raw):
+        self.__raw = raw
+
+    def inlet(self, name: str):
+        return self.__raw["inlets"][name]
+
+    def outlet(self, name: str):
+        return self.__raw["outlets"][name]
 
 
 def assemble_chunks(collected_chunks) -> object:
@@ -115,3 +127,14 @@ class QapioGrpcInstance:
     def source(self, expression: str) -> Observable:
         args = qapi_pb2.SourceRequest(expression=expression)
         return concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id)])))
+
+    @staticmethod
+    def get_manifest() -> Manifest:
+        manifest_length = int.from_bytes(
+            os.read(0, 4),
+            "little"
+        )
+
+        manifest = json.loads(os.read(0, manifest_length).decode('utf8'))
+
+        return Manifest(manifest)

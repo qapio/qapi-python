@@ -7,10 +7,10 @@ from qapi_python.actors import Qapi as QapiActor
 from qapi_python.actors.Source import Event
 
 
-class FlowActor(ThreadingActor):
-    def __init__(self, qapi, manifest, func, *_args: Any, **_kwargs: Any):
-        super().__init__(*_args, **_kwargs)
-        self.__manifest = manifest
+class FlowActor(QapiActor.Qapi):
+    def __init__(self, endpoint, func, *_args: Any, **_kwargs: Any):
+        super().__init__(endpoint,*_args, **_kwargs)
+        self.__manifest = self.get_manifest()
         self.__function = func
         self.__params = inspect.signature(self.__function).parameters
         self.__spread = False
@@ -18,9 +18,9 @@ class FlowActor(ThreadingActor):
         if len(self.__params) > 1:
             self.__spread = True
 
-        qapi.proxy().source(manifest["inlets"]["Request"], self.actor_ref)
+        self.source(self.__manifest.inlet("Request"), self.actor_ref)
 
-        self.__sink = qapi.proxy().sink(manifest["outlets"]["Response"]).get().proxy()
+        self.__sink = self.sink(self.__manifest.inlet("Response")).get().proxy()
 
     def transmit(self, value):
 
@@ -40,13 +40,4 @@ def function(fn):
 
     endpoint = "127.0.0.1:5021"
 
-    qapi = QapiActor.Qapi.start(endpoint)
-
-    manifest_length = int.from_bytes(
-        os.read(0, 4),
-        "little"
-    )
-
-    manifest = json.loads(os.read(0, manifest_length).decode('utf8'))
-
-    FlowActor.start(qapi, manifest, fn)
+    FlowActor.start(endpoint, fn)
