@@ -6,7 +6,7 @@ from qapi_python.actors.Source import Source
 from qapi_python.actors.Sink import Sink
 from qapi_python.client.Qapi import QapioGrpcInstance
 
-from qapi_python.client.Manifest import Manifest
+from qapi_python.client.Qapi import Manifest
 
 
 class Qapi(pykka.ThreadingActor):
