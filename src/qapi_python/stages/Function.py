@@ -26,9 +26,9 @@ class FlowActor(ThreadingActor):
 
         if self.__spread and isinstance(value, dict):
             ordered_args = {param: value.get(param) for param in list(self.__params.keys())}
-            self.__function(**ordered_args)
+            self.__sink.on_next(self.__function(**ordered_args))
         else:
-            self.__function(value)
+            self.__sink.on_next(self.__function(value))
 
     def on_receive(self, message: Event) -> Any:
 
