@@ -2,8 +2,8 @@ from typing import Any
 from pykka import ThreadingActor
 import os
 import json
+import inspect
 from qapi_python.actors import Qapi as QapiActor
-
 from qapi_python.actors.Source import Event
 
 
@@ -12,13 +12,23 @@ class FlowActor(ThreadingActor):
         super().__init__(*_args, **_kwargs)
         self.__manifest = manifest
         self.__function = func
+        self.__params = inspect.signature(self.__function).parameters
+        self.__spread = False
+
+        if len(self.__params) > 1:
+            self.__spread = True
 
         qapi.proxy().source(manifest["inlets"]["Request"], self.actor_ref)
 
         self.__sink = qapi.proxy().sink(manifest["outlets"]["Response"]).get().proxy()
 
     def transmit(self, value):
-        self.__sink.on_next(self.__function(value))
+
+        if self.__spread and value is dict:
+            ordered_args = {param: value.get(param) for param in list(self.__params.keys())}
+            self.__function(**ordered_args)
+        else:
+            self.__function(value)
 
     def on_receive(self, message: Event) -> Any:
 
