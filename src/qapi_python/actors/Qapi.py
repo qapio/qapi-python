@@ -22,4 +22,4 @@ class Qapi(pykka.ThreadingActor):
         return Sink.start(expression, self.__client)
 
     def get_subject(self, name: str):
-        return Sink.start(name, self.__client)
+        return Sink.start(name, self.__client).proxy()
