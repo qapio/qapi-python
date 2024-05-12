@@ -9,7 +9,6 @@ import msgpack
 from typing import Iterable
 from math import ceil
 from collections import namedtuple
-from .Manifest import load_qapio_manifest
 import uuid
 from .Scheduler import scheduler
 import os
