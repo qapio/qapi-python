@@ -6,8 +6,6 @@ from qapi_python.actors.Source import Source
 from qapi_python.actors.Sink import Sink
 from qapi_python.client.Qapi import QapioGrpcInstance
 
-from qapi_python.client.Qapi import Manifest
-
 
 class Qapi(pykka.ThreadingActor):
     def __init__(self, endpoint: str, *_args: Any, **_kwargs: Any):
@@ -24,4 +22,4 @@ class Qapi(pykka.ThreadingActor):
         return Sink.start(expression, self.__client)
 
     def get_subject(self, name: str):
-        return Sink.start(self.get_manifest().outlet(name), self.__client)
+        return Sink.start(name, self.__client)
