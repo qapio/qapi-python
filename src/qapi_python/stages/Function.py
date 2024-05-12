@@ -18,9 +18,9 @@ class FlowActor(QapiActor.Qapi):
         if len(self.__params) > 1:
             self.__spread = True
 
-        self.source(self.__manifest.inlet("Request"), self.actor_ref)
+        self.subscribe("Request")
 
-        self.__sink = self.sink(self.__manifest.inlet("Response")).get().proxy()
+        self.__sink = self.get_subject("Response")
 
     def transmit(self, value):
 

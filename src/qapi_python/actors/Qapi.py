@@ -13,12 +13,23 @@ class Qapi(pykka.ThreadingActor):
     def __init__(self, endpoint: str, *_args: Any, **_kwargs: Any):
         super().__init__(*_args, **_kwargs)
         self.__client = QapioGrpcInstance(endpoint)
+        self.__manifest = None
 
     def source(self, expression: str, target: pykka.ActorRef):
         return Source.start(expression, self.__client, target)
 
+    def subscribe(self, inlet: str):
+        return Source.start(self.get_manifest().inlet(inlet), self.__client, self.actor_ref)
+
     def sink(self, expression: str):
         return Sink.start(expression, self.__client)
 
+    def get_subject(self, name: str):
+        return Sink.start(self.get_manifest().outlet(name), self.__client)
+
     def get_manifest(self) -> Manifest:
-        return self.__client.get_manifest()
+        if self.__manifest is not None:
+            return self.__manifest
+
+        self.__manifest = self.__client.get_manifest()
+        return self.__manifest
