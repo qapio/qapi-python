@@ -23,6 +23,7 @@ dependencies = [
     "reactivex",
     "grpcio",
     "msgpack",
+    "protobuf"
 
 ]
 
