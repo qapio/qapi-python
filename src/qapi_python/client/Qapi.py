@@ -39,7 +39,7 @@ def assemble_chunks(collected_chunks) -> object:
 
     bytes_data = bytes_data[:cur_index]
 
-    return json.loads(bytes_data.decode("utf-8"))
+    return msgpack.unpackb(bytes_data)
 
 
 
