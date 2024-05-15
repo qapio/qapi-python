@@ -23,11 +23,19 @@ class FlowActor(QapiActor.Qapi):
 
     def transmit(self, value):
 
-        if self.__spread and isinstance(value, dict):
+        data = value
+
+        if self.spread and isinstance(value, str):
+            try:
+                data = json.loads(data)
+            except Exception as e:
+                print(e)
+
+        if self.__spread and isinstance(data, dict):
             ordered_args = {param: value.get(param) for param in list(self.__params.keys())}
             self.__sink.on_next(self.__function(**ordered_args))
         else:
-            self.__sink.on_next(self.__function(value))
+            self.__sink.on_next(self.__function(data))
 
     def on_receive(self, message: Event) -> Any:
 
