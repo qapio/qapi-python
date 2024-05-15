@@ -40,7 +40,6 @@ class FlowActor(QapiActor.Qapi):
 
     def on_receive(self, message: Event) -> Any:
 
-        print(message)
         if message.inlet == "Request":
             self.transmit(message.value)
 
