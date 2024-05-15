@@ -20,6 +20,7 @@ class FlowActor(QapiActor.Qapi):
         self.subscribe("Request")
 
         self.__sink = self.get_subject("Response")
+        print("MAGA")
 
     def transmit(self, value):
 
@@ -39,7 +40,8 @@ class FlowActor(QapiActor.Qapi):
 
     def on_receive(self, message: Event) -> Any:
 
-        if message.inlet is "Request":
+        print(message)
+        if message.inlet == "Request":
             self.transmit(message.value)
 
 

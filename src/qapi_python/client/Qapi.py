@@ -39,12 +39,12 @@ def assemble_chunks(collected_chunks) -> object:
 
     bytes_data = bytes_data[:cur_index]
 
-    return msgpack.unpackb(bytes_data)
+    return json.loads(bytes_data.decode("utf-8"))
 
 
 
 def create_chunks(msg, chunk_size) -> Iterable:
-    bytes_data = msgpack.packb(msg)
+    bytes_data = json.dumps(msg)
 
     if len(bytes_data) <= chunk_size:
         chunked_message = {'Bytes': bytes_data, 'FirstChunk': True, 'LastChunk': True}
