@@ -44,7 +44,7 @@ def assemble_chunks(collected_chunks) -> object:
 
 
 def create_chunks(msg, chunk_size) -> Iterable:
-    bytes_data = json.dumps(msg)
+    bytes_data = msgpack.packb(msg)
 
     if len(bytes_data) <= chunk_size:
         chunked_message = {'Bytes': bytes_data, 'FirstChunk': True, 'LastChunk': True}
