@@ -26,7 +26,7 @@ class FlowActor(QapiActor.Qapi):
 
         data = value
 
-        if self.spread and isinstance(value, str):
+        if self.__spread and isinstance(value, str):
             try:
                 data = json.loads(data)
             except Exception as e:
