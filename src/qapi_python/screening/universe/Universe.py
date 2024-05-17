@@ -5,7 +5,7 @@ from qapi_python.actors import Qapi as QapiActor
 from qapi_python.actors.Source import Event
 
 
-class FlowActor(QapiActor.Qapi):
+class UniverseActor(QapiActor.Qapi):
     def __init__(self, endpoint, func, *_args: Any, **_kwargs: Any):
         super().__init__(endpoint,*_args, **_kwargs)
         self.__function = func
@@ -41,8 +41,8 @@ class FlowActor(QapiActor.Qapi):
             self.transmit(message.value)
 
 
-def function(fn):
+def universe(fn):
 
     endpoint = "127.0.0.1:5021"
 
-    FlowActor.start(endpoint, fn)
+    UniverseActor.start(endpoint, fn)
