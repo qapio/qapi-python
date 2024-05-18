@@ -27,6 +27,9 @@ class Manifest:
     def outlet(self, name: str):
         return self.__raw["outlets"][name]
 
+    def principal_id(self):
+        return self.__raw["principalId"]
+
 
 def assemble_chunks(collected_chunks) -> object:
     buffer_size = sum(len(bytes(chunk)) for chunk in collected_chunks)
@@ -93,10 +96,11 @@ def custom_encoder(x):
         raise TypeError
 
 class Transmitter:
-    def __init__(self, expression, stub, session_id):
+    def __init__(self, expression, stub, session_id, principal_id):
         self.__stub = stub
         self.__expression = expression
         self.__session_id = session_id
+        self.__principal_id = principal_id
 
     def to_payload(self, value) -> Iterable[qapi_pb2.Chunk]:
         chunks = create_chunks(value, 64000)
@@ -106,26 +110,27 @@ class Transmitter:
             yield c
 
     def on_next(self, value):
-        self.__stub.Sink(self.to_payload(value), metadata=[('session_id', self.__session_id)])
+        self.__stub.Sink(self.to_payload(value), metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)])
 
 class QapioGrpcInstance:
 
     def __init__(self, endpoint: str):
         self.__manifest = None
         self.__session_id = str(uuid.uuid4())
+        self.__principal_id = self.__session_id
         self.__channel = channel = grpc.insecure_channel(endpoint)
 
         self.__stub = qapi_pb2_grpc.QapiStub(channel)
 
     def sink(self, expression: str):
-        return Transmitter(expression, self.__stub, self.__session_id)
+        return Transmitter(expression, self.__stub, self.__session_id, self.__principal_id)
 
     def close(self):
         self.__channel.close()
 
     def source(self, expression: str) -> Observable:
         args = qapi_pb2.SourceRequest(expression=expression)
-        return concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id)])))
+        return concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)])))
 
     def get_manifest(self) -> Manifest:
 
@@ -140,5 +145,6 @@ class QapioGrpcInstance:
         manifest = json.loads(os.read(0, manifest_length).decode('utf8'))
 
         self.__manifest = Manifest(manifest)
+        self.__principal_id = self.__manifest.principal_id()
 
         return self.__manifest
