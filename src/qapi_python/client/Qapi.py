@@ -106,7 +106,10 @@ class Transmitter:
         chunks = create_chunks(value, 64000)
         for chunk in chunks:
             v = json.dumps(chunk, default=custom_encoder)
-            c = qapi_pb2.Chunk(expression=self.__expression, bytes=[Any(value=bytes(v, 'utf-8'))])
+            bt = bytes(v, 'utf-8')
+            payload_length = len(bt).to_bytes(4, byteorder='big')
+            data = payload_length + bt
+            c = qapi_pb2.Chunk(expression=self.__expression, bytes=[Any(value=data)])
             yield c
 
     def on_next(self, value):
