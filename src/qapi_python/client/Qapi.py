@@ -112,6 +112,10 @@ class Transmitter:
             v = json.dumps(chunk, default=custom_encoder)
             payload_bytes = bytes(v, 'utf-8')
             payload_length = len(payload_bytes).to_bytes(4, byteorder='big')
+            payload_length2 = len(payload_bytes).to_bytes(4, byteorder='little')
+
+            print(payload_length)
+            print(payload_length2)
         #return [payload_length + payload_bytes]
             data = payload_length + payload_bytes
             c = qapi_pb2.Chunk(expression=self.__expression, bytes=[Any(value=data)])
