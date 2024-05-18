@@ -27,8 +27,8 @@ class Manifest:
     def outlet(self, name: str):
         return self.__raw["outlets"][name]
 
-    def principal_id(self):
-        return self.__raw["principalId"]
+    def id(self):
+        return self.__raw["id"]
 
 
 def assemble_chunks(collected_chunks) -> object:
@@ -145,6 +145,6 @@ class QapioGrpcInstance:
         manifest = json.loads(os.read(0, manifest_length).decode('utf8'))
 
         self.__manifest = Manifest(manifest)
-        self.__principal_id = self.__manifest.principal_id()
+        self.__principal_id = self.__manifest.id()
 
         return self.__manifest
