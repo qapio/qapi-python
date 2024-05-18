@@ -11,7 +11,7 @@ class FactorActor(QapiActor.Qapi):
         self.__function = func
         self.__params = inspect.signature(self.__function).parameters
         self.__spread = False
-
+        self.__sink = None
         if len(self.__params) > 1:
             self.__spread = True
 
@@ -20,6 +20,9 @@ class FactorActor(QapiActor.Qapi):
         self.__sink = self.get_subject("Response")
 
     def transmit(self, value):
+
+        if self.__sink is None:
+            self.__sink = self.get_subject("Response")
 
         data = value
 
