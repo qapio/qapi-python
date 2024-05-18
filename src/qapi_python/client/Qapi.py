@@ -47,18 +47,22 @@ def assemble_chunks(collected_chunks) -> object:
 
 
 def create_chunks(msg, chunk_size) -> Iterable:
-    bytes_data = msgpack.packb(msg)
+    v = json.dumps(msg, default=custom_encoder)
+    bt = bytes(v, 'utf-8')
 
-    if len(bytes_data) <= chunk_size:
-        chunked_message = {'Bytes': bytes_data, 'FirstChunk': True, 'LastChunk': True}
+
+   # bytes_data = msgpack.packb(msg)
+
+    if len(bt) <= chunk_size:
+        chunked_message = {'Bytes': bt, 'FirstChunk': True, 'LastChunk': True}
         yield chunked_message
     else:
-        chunk_count = ceil(len(bytes_data) / chunk_size)
+        chunk_count = ceil(len(bt) / chunk_size)
         first = True
         for i in range(chunk_count):
             is_last = i == chunk_count - 1
-            next_chunk = min(chunk_size, len(bytes_data) - i * chunk_size)
-            chunked_message = {'Bytes': bytes_data[i * chunk_size : i * chunk_size + next_chunk], 'FirstChunk': first, 'LastChunk': is_last}
+            next_chunk = min(chunk_size, len(bt) - i * chunk_size)
+            chunked_message = {'Bytes': bt[i * chunk_size : i * chunk_size + next_chunk], 'FirstChunk': first, 'LastChunk': is_last}
             first = False
             yield chunked_message
 
@@ -106,10 +110,7 @@ class Transmitter:
         chunks = create_chunks(value, 64000)
         for chunk in chunks:
             v = json.dumps(chunk, default=custom_encoder)
-            bt = bytes(v, 'utf-8')
-            payload_length = len(bt).to_bytes(4, byteorder='big')
-            data = payload_length + bt
-            c = qapi_pb2.Chunk(expression=self.__expression, bytes=[Any(value=data)])
+            c = qapi_pb2.Chunk(expression=self.__expression, bytes=[Any(value=bytes(v, 'utf-8'))])
             yield c
 
     def on_next(self, value):
