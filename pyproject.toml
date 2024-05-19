@@ -23,9 +23,7 @@ dependencies = [
     "pandas",
     "reactivex",
     "grpcio",
-    "msgpack",
     "protobuf"
-
 ]
 
 [project.optional-dependencies]

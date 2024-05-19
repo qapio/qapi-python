@@ -55,9 +55,9 @@ class UniverseActor(QapiActor.Qapi):
         for date in dates:
             context = Context(date)
 
-            self.__function(context)
+            self.__instance.formula(context)
 
-            results[date] = context.results
+            results[date.strftime("%Y-%m-%dT%H:%M:%SZ")] = context.results
 
         self.__sink.on_next({'Guid': guid, 'Results': results})
 
