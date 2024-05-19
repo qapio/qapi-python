@@ -1,42 +1,77 @@
-from typing import Any
+from typing import Any, List
 import json
 import inspect
+import traceback
 from qapi_python.actors import Qapi as QapiActor
 from qapi_python.actors.Source import Event
+from pandas import Timestamp
+
+
+class Context:
+    def __init__(self, timestamp: Timestamp):
+        self.__timestamp = timestamp
+        self.__results = []
+
+    @property
+    def date(self) -> Timestamp:
+        return self.__timestamp
+
+    @property
+    def results(self):
+        return self.__results
+
+    def add_member(self, measurement, meta: dict={}):
+        self.__results.append({'Measurement': measurement, 'Meta': meta})
 
 
 class FactorActor(QapiActor.Qapi):
     def __init__(self, endpoint, func, *_args: Any, **_kwargs: Any):
-        super().__init__(endpoint,*_args, **_kwargs)
-        self.__function = func
-        self.__params = inspect.signature(self.__function).parameters
-        self.__spread = False
-        self.__sink = None
-        if len(self.__params) > 1:
-            self.__spread = True
+        super().__init__(endpoint, *_args, **_kwargs)
+        self.__instance = func()
 
         self.subscribe("Request")
 
         self.__sink = self.get_subject("Response")
 
-    def transmit(self, value):
+    @staticmethod
+    def get_dates(data):
+        parsed = {}
 
-        if self.__sink is None:
-            self.__sink = self.get_subject("Response")
+        keys = list(data.keys())
+        keys.sort()
+
+        for d in keys:
+            parsed[Timestamp(d, tz='utc')] = data[d]
+
+        return parsed
+
+    def transmit(self, value):
 
         data = value
 
-        if self.__spread and isinstance(value, str):
-            try:
-                data = json.loads(data)
-            except Exception as e:
-                print(e)
+        message = data["Universe"]
+        universeId = data["Measurement"]
+        factor = data["Factor"]
+        guid = data["Guid"]
 
-        if self.__spread and isinstance(data, dict):
-            ordered_args = {param: value.get(param) for param in list(self.__params.keys())}
-            self.__sink.on_next(self.__function(**ordered_args))
-        else:
-            self.__sink.on_next(self.__function(data))
+        try:
+            results = {}
+            dates = self.get_dates(message)
+
+            all_members = []
+            for date, value in message.items():
+                all_members = all_members + [o.get("measurement") for o in value]
+
+            for date, universe in dates.items():
+                results[date.strftime("%Y-%m-%dT%H:%M:%SZ")] = []
+                for member in universe:
+                    context = Context(date)
+                    self.__instance.formula(context)
+
+            self.__sink.on_next({'Guid': guid, 'Data': results})
+
+        except Exception as ex:
+            traceback.print_exc()
 
     def on_receive(self, message: Event) -> Any:
 
