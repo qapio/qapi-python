@@ -1,39 +1,65 @@
-from typing import Any
+from typing import Any, List
 import json
 import inspect
 from qapi_python.actors import Qapi as QapiActor
 from qapi_python.actors.Source import Event
+from pandas import Timestamp
+
+
+class Context:
+    def __init__(self, timestamp: Timestamp):
+        self.__timestamp = timestamp
+        self.__results = []
+
+    @property
+    def date(self) -> Timestamp:
+        return self.__timestamp
+
+    @property
+    def results(self):
+        return self.__results
+
+    def add_member(self, measurement, meta: dict={}):
+        self.__results.append({'Measurement': measurement, 'Meta': meta})
 
 
 class UniverseActor(QapiActor.Qapi):
     def __init__(self, endpoint, func, *_args: Any, **_kwargs: Any):
-        super().__init__(endpoint,*_args, **_kwargs)
-        self.__function = func
-        self.__params = inspect.signature(self.__function).parameters
-        self.__spread = False
-
-        if len(self.__params) > 1:
-            self.__spread = True
+        super().__init__(endpoint, *_args, **_kwargs)
+        self.__instance = func()
 
         self.subscribe("Request")
 
         self.__sink = self.get_subject("Response")
 
+    @staticmethod
+    def get_dates(data):
+        parsed = []
+
+        data.sort()
+
+        for d in data:
+            parsed.append(Timestamp(d, tz='utc'))
+
+        return parsed
+
     def transmit(self, value):
 
         data = value
 
-        if self.__spread and isinstance(value, str):
-            try:
-                data = json.loads(data)
-            except Exception as e:
-                print(e)
+        dates = self.get_dates(data['Dates'])
+        guid = data["Guid"]
 
-        if self.__spread and isinstance(data, dict):
-            ordered_args = {param: value.get(param) for param in list(self.__params.keys())}
-            self.__sink.on_next(self.__function(**ordered_args))
-        else:
-            self.__sink.on_next(self.__function(data))
+        results = {}
+
+        for date in dates:
+            context = Context(date)
+
+            self.__function(context)
+
+            results[date] = context.results
+
+        self.__sink.on_next({'Guid': guid, 'Results': results})
 
     def on_receive(self, message: Event) -> Any:
 

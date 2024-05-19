@@ -1,36 +1,28 @@
+import uuid
 from typing import Any
-
+import json
 from pykka import ThreadingActor
-
-from qapi_python.client import Qapi
-from qapi_python.actors import Qapi as QapiActor
+from reactivex import  operators
+from src.qapi_python.client import Qapi
 
 
 endpoint = "127.0.0.1:5021"
 
 
-#qapi = Qapi.QapioGrpcInstance(endpoint)
+qapi = Qapi.QapioGrpcInstance(endpoint)
 
 
+#qapi.source("Source.Tick(1000)").subscribe(lambda x: print(x))
 
-class FlowActor(ThreadingActor):
-    def __init__(self, qapi, *_args: Any, **_kwargs: Any):
-        super().__init__(*_args, **_kwargs)
-        qapi.proxy().source("FlightData_Ui.Files.ReadAllText('Index.json').Take(1)", self.actor_ref)
-        self.__sink = qapi.proxy().sink("ddd").get().proxy()
-
-    def transmit(self, value):
-        for i in range(0, 100):
-            self.__sink.on_next(value)
-
-    def on_receive(self, message: Any) -> Any:
-        self.transmit(message)
-
-qapi2 = QapiActor.Qapi.start(endpoint)
-FlowActor.start(qapi2)
-#qapi.source("Source.Tick(1000)").subscribe(lambda x: print(assemble_chunks(x)))
+a = "MyScreen1.Operators.Generate(10240000, 5000)"
+#qapi.source(f"Source.Single({{Guid: '{uuid.uuid4()}', Dates: ['2020-01-01','2020-01-02','2020-01-03','2020-01-04','2020-01-05','2020-01-06','2020-01-07','2020-01-01','2020-01-08','2020-01-09','2020-01-10']}}).Via(Universe11.LoadUniverse().Pack())").subscribe(lambda x: print(len(json.dumps(x))))
+#qapi.source("Universe11.LoadUniverse2(100)").subscribe(lambda x: print(len(json.dumps(x))))
 
 
+def count(acc, i):
+    return acc+len(i)/1000000
+
+qapi.source(a).pipe(operators.scan(count, 0)).subscribe(lambda x: print(x))
 # sink = qapi.sink("ddd")
 #
 # def transmit(c):
@@ -42,6 +34,6 @@ FlowActor.start(qapi2)
 #     #sink.on_next(data)
 #
 #
-# qapi.source("FlightData_Ui.Files.ReadAllText('Index.json').Take(1)").subscribe(lambda x: transmit(x))
+#
 #
 # qapi.close()

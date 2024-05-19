@@ -20,6 +20,7 @@ license = {text = "MIT license"}
 dependencies = [
   "typer",
     "pykka",
+    "pandas",
     "reactivex",
     "grpcio",
     "msgpack",
