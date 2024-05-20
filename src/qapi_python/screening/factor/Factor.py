@@ -8,7 +8,7 @@ from pandas import Timestamp
 
 
 class Context:
-    def __init__(self, timestamp: Timestamp, measurement: str):
+    def __init__(self, timestamp: Timestamp, measurement: dict):
         self.__timestamp = timestamp
         self.__measurement = measurement
         self.__results = []
@@ -19,14 +19,14 @@ class Context:
 
     @property
     def measurement(self) -> str:
-        return self.__measurement
+        return self.__measurement['Measurement']
 
     @property
     def results(self):
         return self.__results
 
     def set_value(self, value):
-        self.__results.append({"Measurement": self.__measurement, "Time": self.__timestamp.strftime("%Y-%m-%dT%H:%M:%SZ"), "Fields": {'_value':value}, "Tags": {
+        self.__results.append({"Measurement": self.__measurement['Measurement'], "Time": self.__timestamp.strftime("%Y-%m-%dT%H:%M:%SZ"), "Fields": {'_value':value}, "Tags": {
 
         }})
 
