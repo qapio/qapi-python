@@ -25,8 +25,10 @@ class Context:
     def results(self):
         return self.__results
 
-    def add_member(self, measurement, meta: dict={}):
-        self.__results.append({'Measurement': measurement, 'Meta': meta})
+    def set_value(self, value):
+        self.__results.append({"Measurement": self.__measurement, "Time": self.__timestamp.strftime("%Y-%m-%dT%H:%M:%SZ"), "Fields": {'_value':value}, "Tags": {
+
+        }})
 
 
 class FactorActor(QapiActor.Qapi):
@@ -73,9 +75,8 @@ class FactorActor(QapiActor.Qapi):
                 for member in universe:
                     context = Context(date, member)
                     self.__instance.formula(context)
-                    dr.append({"Measurement": member, "Time": self.date.strftime("%Y-%m-%dT%H:%M:%SZ"), "Fields": {self.field: self.value}, "Tags": {
-                        "FSYM_ID": ''
-                    }})
+                    for r in context.results:
+                        dr.append(r)
 
                 results[date.strftime("%Y-%m-%dT%H:%M:%SZ")] = dr
 
