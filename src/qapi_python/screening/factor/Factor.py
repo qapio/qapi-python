@@ -8,13 +8,18 @@ from pandas import Timestamp
 
 
 class Context:
-    def __init__(self, timestamp: Timestamp):
+    def __init__(self, timestamp: Timestamp, measurement: str):
         self.__timestamp = timestamp
+        self.__measurement = measurement
         self.__results = []
 
     @property
     def date(self) -> Timestamp:
         return self.__timestamp
+
+    @property
+    def measurement(self) -> str:
+        return self.__measurement
 
     @property
     def results(self):
@@ -63,10 +68,16 @@ class FactorActor(QapiActor.Qapi):
                 all_members = all_members + [o.get("measurement") for o in value]
 
             for date, universe in dates.items():
-                results[date.strftime("%Y-%m-%dT%H:%M:%SZ")] = []
+                dr = []
+
                 for member in universe:
-                    context = Context(date)
+                    context = Context(date, member)
                     self.__instance.formula(context)
+                    dr.append([{"Measurement": member, "Time": self.date.strftime("%Y-%m-%dT%H:%M:%SZ"), "Fields": {self.field: self.value}, "Tags": {
+                        "FSYM_ID": ''
+                    }}])
+
+                results[date.strftime("%Y-%m-%dT%H:%M:%SZ")] = dr
 
             self.__sink.on_next({'Guid': guid, 'Data': results})
 
