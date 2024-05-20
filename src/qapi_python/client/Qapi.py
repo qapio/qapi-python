@@ -118,7 +118,7 @@ class Transmitter:
             yield c
 
     def on_next(self, value):
-        self.__stub.Sink(self.to_payload(value), metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)], timeout=10)
+        self.__stub.Sink(self.to_payload(value), metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)])
 
 class QapioGrpcInstance:
 
@@ -138,7 +138,7 @@ class QapioGrpcInstance:
 
     def source(self, expression: str) -> Observable:
         args = qapi_pb2.SourceRequest(expression=expression)
-        return concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)], timeout=10)))
+        return concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)])))
 
     def get_manifest(self) -> Manifest:
 
