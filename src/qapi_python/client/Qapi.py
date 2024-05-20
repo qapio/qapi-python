@@ -106,7 +106,7 @@ class Transmitter:
         self.__principal_id = principal_id
 
     def to_payload(self, value) -> Iterable[qapi_pb2.Chunk]:
-        chunks = create_chunks(value, 64000)
+        chunks = create_chunks(value, 32000)
         for chunk in chunks:
             v = json.dumps(chunk, default=custom_encoder)
             payload_bytes = bytes(v, 'utf-8')
