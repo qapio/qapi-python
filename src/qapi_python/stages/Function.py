@@ -33,7 +33,10 @@ class FlowActor(QapiActor.Qapi):
             ordered_args = {param: value.get(param) for param in list(self.__params.keys())}
             self.__sink.on_next(self.__function(**ordered_args))
         else:
-            self.__sink.on_next(self.__function(data))
+            if len(self.__params) == 0:
+                self.__sink.on_next(self.__function())
+            else:
+                self.__sink.on_next(self.__function(data))
 
     def on_receive(self, message: Event) -> Any:
 
