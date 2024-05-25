@@ -29,6 +29,9 @@ class Manifest:
     def id(self):
         return self.__raw["id"]
 
+    def deadline(self):
+        return self.__raw["deadline"]
+
 
 def assemble_chunks(collected_chunks) -> object:
     buffer_size = sum(len(bytes(chunk)) for chunk in collected_chunks)
@@ -99,8 +102,9 @@ def custom_encoder(x):
         raise TypeError
 
 class Transmitter:
-    def __init__(self, expression, stub, session_id, principal_id):
+    def __init__(self, expression, stub, session_id, principal_id, deadline):
         self.__stub = stub
+        self.__deadline = deadline
         self.__expression = expression
         self.__session_id = session_id
         self.__principal_id = principal_id
@@ -118,7 +122,7 @@ class Transmitter:
             yield c
 
     def on_next(self, value):
-        self.__stub.Sink(self.to_payload(value), metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)])
+        self.__stub.Sink(self.to_payload(value), metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)], timeout=self.__deadline)
 
 class QapioGrpcInstance:
 
@@ -138,7 +142,12 @@ class QapioGrpcInstance:
 
     def source(self, expression: str) -> Observable:
         args = qapi_pb2.SourceRequest(expression=expression)
-        return concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)])))
+        timeout = None
+
+        if self.__manifest is not None:
+            timeout = self.__manifest.deadline
+
+        return concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)], timeout=timeout)))
 
     def get_manifest(self) -> Manifest:
 
