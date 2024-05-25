@@ -135,7 +135,12 @@ class QapioGrpcInstance:
         self.__stub = qapi_pb2_grpc.QapiStub(channel)
 
     def sink(self, expression: str):
-        return Transmitter(expression, self.__stub, self.__session_id, self.__principal_id)
+        timeout = None
+
+        if self.__manifest is not None:
+            timeout = self.__manifest.deadline()
+
+        return Transmitter(expression, self.__stub, self.__session_id, self.__principal_id, timeout)
 
     def close(self):
         self.__channel.close()
@@ -145,7 +150,7 @@ class QapioGrpcInstance:
         timeout = None
 
         if self.__manifest is not None:
-            timeout = self.__manifest.deadline
+            timeout = self.__manifest.deadline()
 
         return concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)], timeout=timeout)))
 
