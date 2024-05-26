@@ -30,7 +30,7 @@ class UniverseActor(QapiActor.Qapi):
 
         self.subscribe("Request")
 
-        self.__sink = self.get_subject("Response")
+        self.__sink = None
 
     @staticmethod
     def get_dates(data):
@@ -58,6 +58,9 @@ class UniverseActor(QapiActor.Qapi):
             self.__instance.formula(context)
 
             results[date.strftime("%Y-%m-%dT%H:%M:%SZ")] = context.results
+
+        if self.__sink is None:
+            self.__sink = self.get_subject("Response")
 
         self.__sink.on_next({'Guid': guid, 'Results': results})
 

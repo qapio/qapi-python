@@ -37,8 +37,7 @@ class FactorActor(QapiActor.Qapi):
         self.__instance = func()
 
         self.subscribe("Request")
-
-        self.__sink = self.get_subject("Response")
+        self.__sink = None
 
     @staticmethod
     def get_dates(data):
@@ -79,6 +78,9 @@ class FactorActor(QapiActor.Qapi):
                         dr.append(r)
 
                 results[date.strftime("%Y-%m-%dT%H:%M:%SZ")] = dr
+
+            if self.__sink is None:
+                self.__sink = self.get_subject("Response")
 
             self.__sink.on_next({'Guid': guid, 'Data': results})
 
