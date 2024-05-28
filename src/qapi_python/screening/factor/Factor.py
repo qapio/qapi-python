@@ -8,27 +8,33 @@ from pandas import Timestamp
 
 
 class Context:
-    def __init__(self, timestamp: Timestamp, measurement: dict):
-        self.__timestamp = timestamp
-        self.__measurement = measurement
+    def __init__(self):
+        pass
+
+
+class Member:
+    def __init__(self, measurement: str, meta: dict):
+        self.measurement = measurement
+        self.meta = meta
+
+
+class FactorResult:
+    def __init__(self, universe_id: str, member: Member, date: Timestamp, field: str):
+        self.__universe_id = universe_id
+        self.measurement = member.measurement
+        self.meta = member.meta
+        self.date = date
+        self.field = field
+        self.value = None
         self.__results = []
 
-    @property
-    def date(self) -> Timestamp:
-        return self.__timestamp
-
-    @property
-    def measurement(self) -> str:
-        return self.__measurement['Measurement']
-
-    @property
-    def results(self):
-        return self.__results
-
     def set_value(self, value):
-        self.__results.append({"Measurement": self.__measurement['Measurement'], "Time": self.__timestamp.strftime("%Y-%m-%dT%H:%M:%SZ"), "Fields": {'_value':value}, "Tags": {
+        self.value = value
 
-        }})
+    def results(self):
+        return [{"measurement": self.measurement, "time": self.date.strftime("%Y-%m-%dT%H:%M:%SZ"), "fields": {self.field: self.value}, "tags": {
+
+        }}]
 
 
 class FactorActor(QapiActor.Qapi):
@@ -68,13 +74,15 @@ class FactorActor(QapiActor.Qapi):
             for date, value in message.items():
                 all_members = all_members + [o.get("measurement") for o in value]
 
+            context = Context()
+
             for date, universe in dates.items():
                 dr = []
 
                 for member in universe:
-                    context = Context(date, member)
-                    self.__instance.formula(context)
-                    for r in context.results:
+                    result = FactorResult(universeId, member, date, factor)
+                    self.__instance.formula(result, context)
+                    for r in result.results():
                         dr.append(r)
 
                 results[date.strftime("%Y-%m-%dT%H:%M:%SZ")] = dr
