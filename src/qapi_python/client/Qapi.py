@@ -13,6 +13,7 @@ from .Scheduler import scheduler
 import os
 from . import qapi_pb2 as qapi_pb2
 from . import qapi_pb2_grpc as qapi_pb2_grpc
+from reactivex.scheduler import ThreadPoolScheduler, EventLoopScheduler, ImmediateScheduler
 
 import reactivex
 from reactivex import operators as ops
@@ -57,7 +58,7 @@ def create_chunks(msg, chunk_size) -> Iterable:
     bt = bytes(v, 'utf-8')
 
 
-   # bytes_data = msgpack.packb(msg)
+    # bytes_data = msgpack.packb(msg)
 
     if len(bt) <= chunk_size:
         chunked_message = {'Bytes': bt, 'FirstChunk': True, 'LastChunk': True}
@@ -118,7 +119,7 @@ class Transmitter:
             payload_bytes = bytes(v, 'utf-8')
             payload_length = len(payload_bytes).to_bytes(4, byteorder='big')
 
-        #return [payload_length + payload_bytes]
+            #return [payload_length + payload_bytes]
             data = payload_length + payload_bytes
             c = qapi_pb2.Chunk(expression=self.__expression, bytes=[Any(value=data)])
             yield c
@@ -147,17 +148,19 @@ class QapioGrpcInstance:
     def close(self):
         self.__channel.close()
 
-    def source(self, expression: str) -> Observable:
+    def source(self, expression: str, s=None) -> Observable:
         args = qapi_pb2.SourceRequest(expression=expression)
         timeout = None
 
+        if s is None:
+            s = scheduler
         if self.__manifest is not None:
             timeout = self.__manifest.deadline()
 
-        return concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)], timeout=timeout))).pipe(op.subscribe_on(scheduler))
+        return concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)], timeout=timeout))).pipe(op.subscribe_on(s))
 
     def first(self, expression: str):
-        return self.source(expression+".Take(1)").run()
+        return self.source(expression+".Take(1)", EventLoopScheduler()).run()
 
     def get_manifest(self) -> Manifest:
 
