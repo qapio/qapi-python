@@ -154,6 +154,9 @@ class QapioGrpcInstance:
 
         return concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)], timeout=timeout)))
 
+    def first(self, expression: str):
+        return self.source(expression+".Take(1)").run()
+
     def get_manifest(self) -> Manifest:
 
         if self.__manifest is not None:

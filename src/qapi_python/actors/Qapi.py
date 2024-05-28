@@ -15,6 +15,9 @@ class Qapi(pykka.ThreadingActor):
     def source(self, expression: str, target: pykka.ActorRef):
         return Source.start(expression, self.__client, target)
 
+    def first(self, expression: str):
+        return self.__client.first(expression)
+
     def subscribe(self, inlet: str):
         return Source.start(inlet, self.__client, self.actor_ref)
 

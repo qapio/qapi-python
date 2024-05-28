@@ -8,8 +8,11 @@ from pandas import Timestamp
 
 
 class Context:
-    def __init__(self):
-        pass
+    def __init__(self, qapi):
+        self.__qapi = qapi
+
+    def first(self, expression: str):
+        return self.__qapi.first(expression)
 
 
 class Member:
@@ -74,7 +77,7 @@ class FactorActor(QapiActor.Qapi):
             for date, value in message.items():
                 all_members = all_members + [o.get("measurement") for o in value]
 
-            context = Context()
+            context = Context(self)
 
             for date, universe in dates.items():
                 dr = []
