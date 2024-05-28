@@ -32,7 +32,7 @@ class FactorResult:
         self.value = value
 
     def results(self):
-        return [{"measurement": self.measurement, "time": self.date.strftime("%Y-%m-%dT%H:%M:%SZ"), "fields": {self.field: self.value}, "tags": {
+        return [{"Measurement": self.measurement, "Time": self.date.strftime("%Y-%m-%dT%H:%M:%SZ"), "Fields": {self.field: self.value}, "Tags": {
 
         }}]
 
@@ -80,7 +80,7 @@ class FactorActor(QapiActor.Qapi):
                 dr = []
 
                 for member in universe:
-                    result = FactorResult(universeId, member, date, factor)
+                    result = FactorResult(universeId, Member(member["Measurement"], member["Meta"]), date, factor)
                     self.__instance.formula(result, context)
                     for r in result.results():
                         dr.append(r)
