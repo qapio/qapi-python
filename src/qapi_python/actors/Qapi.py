@@ -13,6 +13,10 @@ class Qapi(pykka.ThreadingActor):
         super().__init__(*_args, **_kwargs)
         self.__client = QapioGrpcInstance(endpoint)
 
+    def on_stop(self):
+        print("BYE")
+        self.__client.dispose()
+
     def source(self, expression: str, target: pykka.ActorRef):
         return Source.start(expression, self.__client, target)
 
