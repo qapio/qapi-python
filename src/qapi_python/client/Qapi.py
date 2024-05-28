@@ -14,6 +14,10 @@ import os
 from . import qapi_pb2 as qapi_pb2
 from . import qapi_pb2_grpc as qapi_pb2_grpc
 
+import reactivex
+from reactivex import operators as ops
+import threading
+
 
 class Manifest:
 
@@ -90,9 +94,7 @@ def concat_map(os):
         op.map(lambda x: json.loads(x.bytes[0].value[4:])),
         op.scan(partition, ([], None)),
         op.filter(lambda x: x[1] is not None),
-        op.map(lambda x: assemble_chunks([base64.b64decode(y['Bytes']) for y in x[1]])),
-        op.subscribe_on(scheduler)
-
+        op.map(lambda x: assemble_chunks([base64.b64decode(y['Bytes']) for y in x[1]]))
     )
 
 def custom_encoder(x):
@@ -152,7 +154,7 @@ class QapioGrpcInstance:
         if self.__manifest is not None:
             timeout = self.__manifest.deadline()
 
-        return concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)], timeout=timeout)))
+        return concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)], timeout=timeout))).pipe(op.subscribe_on(scheduler))
 
     def first(self, expression: str):
         return self.source(expression+".Take(1)").run()

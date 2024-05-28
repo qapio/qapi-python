@@ -7,6 +7,7 @@ from qapi_python.actors.Sink import Sink
 from qapi_python.client.Qapi import QapioGrpcInstance
 
 
+
 class Qapi(pykka.ThreadingActor):
     def __init__(self, endpoint: str, *_args: Any, **_kwargs: Any):
         super().__init__(*_args, **_kwargs)
