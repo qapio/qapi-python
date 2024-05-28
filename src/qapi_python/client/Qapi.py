@@ -178,3 +178,8 @@ class QapioGrpcInstance:
         self.__principal_id = self.__manifest.id()
 
         return self.__manifest
+
+    def __exit__(self, *args, **kwargs):
+        print("DISCONNECT!")
+        self.__channel.close()
+        self.__grpc = None

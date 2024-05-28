@@ -77,7 +77,7 @@ class FactorActor(QapiActor.Qapi):
 
             all_members = []
             for date, value in message.items():
-                all_members = all_members + [o.get("measurement") for o in value]
+                all_members = all_members + [o.get("Measurement") for o in value]
 
             context = Context(self, dates, list(set(all_members)))
 
