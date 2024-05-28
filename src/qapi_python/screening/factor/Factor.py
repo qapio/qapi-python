@@ -98,7 +98,7 @@ class FactorActor(QapiActor.Qapi):
                 self.__sink = self.get_subject("Response")
 
             self.__sink.on_next({'Guid': guid, 'Data': results})
-            self.stop()
+            self.on_stop()
         except Exception as ex:
             traceback.print_exc()
 
