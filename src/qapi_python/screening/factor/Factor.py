@@ -1,10 +1,44 @@
-from typing import Any, List
+from typing import Any, List, Union
 import json
 import inspect
 import traceback
 from qapi_python.actors import Qapi as QapiActor
 from qapi_python.actors.Source import Event
 from pandas import Timestamp
+
+class Endpoint:
+    def __init__(self, node_id: str):
+        self.__node_id = node_id
+
+    def query(self, api: str, args: dict({}) = dict({})):
+        pass
+
+    def time_series(self, bucket: str, measurements: List[str], fields: List[str], from_date: Union[Timestamp, str],
+                    to_date: Union[Timestamp, str], tags: dict = dict({})):
+        return None
+        # if type(from_date) == Timestamp:
+        #     from_date = timestamp2str(from_date)
+        #
+        # if type(to_date) == Timestamp:
+        #     to_date = timestamp2str(to_date)
+        #
+        # data =self.__client.query(f"{self.__node_id}.TimeSeries({{ bucket: '{bucket}', measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, fromDate: '{from_date}', toDate: '{to_date}' }})")
+        #
+        # if "Data" not in data:
+        #     return
+        #
+        # data =  json.loads(data["Data"])
+        #
+        # df = DataFrame(data[1:], columns=data[0])
+        #
+        # df_unstacked = melt(df, id_vars=['_measurement', "_time"], value_vars=fields, var_name='_field',
+        #                     value_name='_value')
+        #
+        # df_unstacked['_time'] = to_datetime(df_unstacked['_time']).dt.tz_localize(UTC)
+        #
+        # ds = DataSet(df_unstacked)
+        #
+        # return ds
 
 
 class Context:
@@ -15,6 +49,9 @@ class Context:
 
     def first(self, expression: str):
         return self.__qapi.first(expression)
+
+    def endpoint(self, endpoint: str):
+        return Endpoint(endpoint)
 
 
 class Member:
