@@ -6,16 +6,18 @@ from qapi_python.actors import Qapi as QapiActor
 from qapi_python.actors.Source import Event
 from pandas import Timestamp
 
+
 class Endpoint:
-    def __init__(self, node_id: str):
+    def __init__(self, node_id: str, qapi):
         self.__node_id = node_id
+        self.__qapi = qapi
 
     def query(self, api: str, args: dict({}) = dict({})):
         pass
 
     def time_series(self, bucket: str, measurements: List[str], fields: List[str], from_date: Union[Timestamp, str],
                     to_date: Union[Timestamp, str], tags: dict = dict({})):
-        return None
+        return self.__qapi.first(f"{self.__node_id}.{bucket}({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date: '{to_date}' }})")
         # if type(from_date) == Timestamp:
         #     from_date = timestamp2str(from_date)
         #
@@ -51,7 +53,7 @@ class Context:
         return self.__qapi.first(expression)
 
     def endpoint(self, endpoint: str):
-        return Endpoint(endpoint)
+        return Endpoint(endpoint, self.__qapi)
 
 
 class Member:
