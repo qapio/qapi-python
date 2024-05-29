@@ -6,7 +6,7 @@ from qapi_python.actors.Source import Event
 from pandas import Timestamp
 
 
-class Context:
+class UniverseResult:
     def __init__(self, timestamp: Timestamp):
         self.__timestamp = timestamp
         self.__results = []
@@ -21,6 +21,11 @@ class Context:
 
     def add_member(self, measurement, meta: dict={}):
         self.__results.append({'Measurement': measurement, 'Meta': meta})
+
+
+class Context:
+    def __init__(self):
+        pass
 
 
 class UniverseActor(QapiActor.Qapi):
@@ -52,12 +57,14 @@ class UniverseActor(QapiActor.Qapi):
 
         results = {}
 
+        context = Context()
+
         for date in dates:
-            context = Context(date)
+            result = UniverseResult(date)
 
-            self.__instance.formula(context)
+            self.__instance.formula(result, context)
 
-            results[date.strftime("%Y-%m-%dT%H:%M:%SZ")] = context.results
+            results[date.strftime("%Y-%m-%dT%H:%M:%SZ")] = result.results
 
         if self.__sink is None:
             self.__sink = self.get_subject("Response")
