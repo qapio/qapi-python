@@ -17,7 +17,8 @@ class Endpoint:
 
     def time_series(self, bucket: str, measurements: List[str], fields: List[str], from_date: Union[Timestamp, str],
                     to_date: Union[Timestamp, str], tags: dict = dict({})):
-        return self.__qapi.first(f"Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date: '{to_date}' }}).Via({self.__node_id}.{bucket}())")
+        print(f"Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date: '{to_date}' }}).Via({self.__node_id}.{bucket}())")
+        return None# self.__qapi.first(f"Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date: '{to_date}' }}).Via({self.__node_id}.{bucket}())")
         # if type(from_date) == Timestamp:
         #     from_date = timestamp2str(from_date)
         #
