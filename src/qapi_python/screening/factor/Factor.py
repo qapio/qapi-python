@@ -4,7 +4,162 @@ import inspect
 import traceback
 from qapi_python.actors import Qapi as QapiActor
 from qapi_python.actors.Source import Event
-from pandas import Timestamp
+from pandas import Timestamp, DataFrame, to_datetime, melt, Series, MultiIndex
+from pytz import UTC
+from numpy import finfo, float32, nan
+from pandas.api.types import is_numeric_dtype
+
+
+def timestamp2str(date: Timestamp):
+    return date.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+
+class DataSet:
+    def __init__(self, data_frame):
+
+        self.__series = dict({})
+        if data_frame is None:
+            return
+
+        if data_frame.empty:
+            return
+        nonCatCols = ["_time", "_value"]
+
+        for col in data_frame.columns:
+            if col not in nonCatCols:
+                data_frame[col] = data_frame[col].astype("category")
+
+        #print(data_frame.dtypes)
+        # data_frame["_time"] = data_frame["_time"].map(lambda x: x.tz_convert('UTC'))
+
+        try:
+            response = data_frame.set_index(MultiIndex.from_frame(data_frame[[
+                "_measurement", "_field", "_time",
+            ]   ], names=["_measurement", "_field", "_time", ]))
+
+
+            #response = response.tz_localize('UTC', level=1)
+
+            response = response.sort_index()
+            a = finfo(float32).min
+            response = response.replace(to_replace=a,
+                                        value=nan)
+            self.__data_frame = response
+
+        except Exception as e:
+            print(e)
+
+
+    @property
+    def data_frame(self):
+        return self.__data_frame
+
+    def series(self, measurement: str, field: str,
+               from_date: Timestamp =
+               None, to_date: Timestamp = None) -> Series:
+
+
+        try:
+            # series = self.__data_frame[
+            #     (self.__data_frame._measurement == measurement) & (self.__data_frame._field == field)]
+
+            if measurement+field not in self.__series:
+
+                colNames = list(self.__data_frame)
+
+                if field in colNames:
+                    data = self.__data_frame.loc[measurement, :, : ]
+                    series = Series(data=data[field].values, index=data["_time"].values)
+                    series = series.tz_localize('UTC', level=0)
+                    self.__series[measurement+field] = series
+                else:
+                    data = self.__data_frame.loc[measurement, field, : ]
+
+                    series = Series(data=data["_value"].values, index=data["_time"].values)
+                    series = series.tz_localize('UTC', level=0)
+                    self.__series[measurement+field] = series
+
+            series = self.__series.get(measurement+field)
+
+            #series = Series(data=series["_value"].values, index=series["_time"].values)
+            #series = series.tz_localize('UTC', level=0)
+
+            if from_date is None and to_date is None:
+                series = series
+
+            if from_date is not None and to_date is not None:
+                series = series.loc[from_date:to_date]
+
+            if from_date is not None and to_date is None:
+                series = series.loc[from_date:]
+
+            if from_date is None and to_date is not None:
+                series = series.loc[:to_date]
+
+            if series is None:
+                return None
+
+            if len(series.index) == 0:
+                return None
+
+            if is_numeric_dtype(series):
+                return series[series < 3.4e38]
+
+            return series.dropna()
+        except:
+            return None
+
+
+    def point_series(self, measurements: List[str], field: str,
+                     date: Timestamp):
+
+        data = []
+
+        for ticker in measurements:
+            p = self.point(
+                ticker,
+                field,
+                date)
+
+            if p is None:
+                p = nan
+
+            data.append(p)
+
+        return Series(data, index=measurements)
+
+    def point(self, measurement: str, field: str, date: Timestamp):
+        series = self.series(measurement, field, date, date)
+
+        if series is None:
+            return None
+
+        try:
+            point = series[date]
+            if isinstance(point, Series):
+                print("Duplicate found.")
+                print(measurement)
+                print(field)
+                return None
+            return point
+        except:
+            return None
+
+    def last(self, measurement: str, field: str, date: Timestamp):
+        series = self.series(measurement, field, None, date)
+
+        if series is None or len(series.tail(1).keys()) == 0:
+            return None
+
+        last = series.tail(1)[0]
+
+        if isinstance(last, Series):
+            print("Duplicate found.")
+            print(measurement)
+            print(field)
+            return None
+
+        return last
 
 
 class Endpoint:
@@ -17,8 +172,19 @@ class Endpoint:
 
     def time_series(self, bucket: str, measurements: List[str], fields: List[str], from_date: Union[Timestamp, str],
                     to_date: Union[Timestamp, str], tags: dict = dict({})):
-        print(f"Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date: '{to_date}' }}).Via({self.__node_id}.{bucket}())")
-        return None# self.__qapi.first(f"Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date: '{to_date}' }}).Via({self.__node_id}.{bucket}())")
+
+        data = self.__qapi.first(f"Source.CompositeSource(Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date: '{to_date}' }}).Via({self.__node_id}.{bucket}()))")
+
+        df = DataFrame(data[1:], columns=data[0])
+
+        df_unstacked = melt(df, id_vars=['_measurement', "_time"], value_vars=fields, var_name='_field',
+                            value_name='_value')
+
+        df_unstacked['_time'] = to_datetime(df_unstacked['_time']).dt.tz_localize(UTC)
+
+        ds = DataSet(df_unstacked)
+
+        return ds
         # if type(from_date) == Timestamp:
         #     from_date = timestamp2str(from_date)
         #
