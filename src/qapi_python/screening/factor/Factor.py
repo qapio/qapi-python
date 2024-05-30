@@ -181,6 +181,7 @@ class Endpoint:
     def time_series(self, bucket: str, measurements: List[str], fields: List[str], from_date: Union[Timestamp, str],
                     to_date: Union[Timestamp, str], tags: dict = dict({})):
 
+        return None
         data = self.__qapi.first(f"{self.__node_id}.CompositeSource(Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date: '{to_date}' }}).Via({self.__node_id}.{bucket}()))")
 
         df = DataFrame(data[1:], columns=data[0])
