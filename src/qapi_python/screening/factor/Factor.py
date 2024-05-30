@@ -156,15 +156,18 @@ class DataSet:
         if series is None or len(series.tail(1).keys()) == 0:
             return None
 
-        last = series.tail(1)[0]
+        try:
+            last = series.tail(1)[0]
 
-        if isinstance(last, Series):
-            print("Duplicate found.")
-            print(measurement)
-            print(field)
+            if isinstance(last, Series):
+                print("Duplicate found.")
+                print(measurement)
+                print(field)
+                return None
+
+            return last
+        except Exception as e:
             return None
-
-        return last
 
 
 class Endpoint:
