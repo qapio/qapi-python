@@ -6,8 +6,8 @@ from qapi_python.actors.Source import Event
 
 
 class FlowActor(QapiActor.Qapi):
-    def __init__(self, endpoint, func, *_args: Any, **_kwargs: Any):
-        super().__init__(endpoint,*_args, **_kwargs)
+    def __init__(self, endpoint, endpoint_http, func, *_args: Any, **_kwargs: Any):
+        super().__init__(endpoint, endpoint_http, *_args, **_kwargs)
         self.__function = func
         self.__params = inspect.signature(self.__function).parameters
         self.__spread = False
@@ -47,5 +47,5 @@ class FlowActor(QapiActor.Qapi):
 def function(fn):
 
     endpoint = "127.0.0.1:5021"
-
-    FlowActor.start(endpoint, fn)
+    endpoint_http = "http://127.0.0.1:2020"
+    FlowActor.start(endpoint, endpoint_http, fn)

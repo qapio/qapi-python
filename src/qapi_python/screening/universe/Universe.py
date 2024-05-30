@@ -29,8 +29,8 @@ class Context:
 
 
 class UniverseActor(QapiActor.Qapi):
-    def __init__(self, endpoint, func, *_args: Any, **_kwargs: Any):
-        super().__init__(endpoint, *_args, **_kwargs)
+    def __init__(self, endpoint, endpoint_http, func, *_args: Any, **_kwargs: Any):
+        super().__init__(endpoint, endpoint_http, *_args, **_kwargs)
         self.__instance = func()
 
         self.subscribe("Request")
@@ -80,5 +80,5 @@ class UniverseActor(QapiActor.Qapi):
 def universe(fn):
 
     endpoint = "127.0.0.1:5021"
-
-    UniverseActor.start(endpoint, fn)
+    endpoint_http = "http://127.0.0.1:2020"
+    UniverseActor.start(endpoint, endpoint_http, fn)

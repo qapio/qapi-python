@@ -325,6 +325,6 @@ class FactorActor(QapiActor.Qapi):
 def factor(fn):
 
     endpoint = "127.0.0.1:5021"
-    endpoint_http = "127.0.0.1:2020"
+    endpoint_http = "http://127.0.0.1:2020"
 
     FactorActor.start(endpoint, endpoint_http, fn)
