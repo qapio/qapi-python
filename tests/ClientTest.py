@@ -6,6 +6,25 @@ from reactivex import operators as ops
 import threading
 import json
 import time
+import requests
+import reactivex
+
+class QapiHttpClient:
+    def __init__(self, url: str):
+        self.__url = url
+
+    def query(self, expression: str):
+        return requests.get(f"{self.__url}/query/{expression}", verify=False).json()
+
+    def source(self, expression: str):
+
+        session = requests.Session()
+
+        return reactivex.from_iterable(session.get(
+            f"{self.__url}/source/{expression}",
+            verify=False, stream=True
+        ).iter_lines(decode_unicode=True))
+
 def get_first_value(observable):
     # Create a container to store the result
     result = []
@@ -47,19 +66,20 @@ endpoint = "127.0.0.1:5021"
 
 
 qapi = Qapi.QapioGrpcInstance(endpoint)
-
+qapi2 = QapiHttpClient("http://127.0.0.1:2020")
 
 node_id = "Source"
-measurements = [random.random() for o in range(0, 100)]
+measurements = [random.random() for o in range(0, 500)]
 fields = ["B"]
 from_date="2020-01-01"
 to_date = "2024-01-01"
 g = f"FACTSETSQL.CompositeSource(Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date: '{to_date}' }}).Via(FACTSETSQL.prices()))"
 
-print(qapi.first(g))
-print(1)
+for i in range(0, 100):
+    a = qapi2.query(g)
 
-qapi.close()
+    print(a)
+#qapi.close()
 
 #a = "Source.Operators.Generate(102400000, 1000).To(MyScreen1.Operators.Consumer())"
 #qapi.source(f"Source.Single({{Guid: '{uuid.uuid4()}', Dates: ['2020-01-01','2020-01-02','2020-01-03','2020-01-04','2020-01-05','2020-01-06','2020-01-07','2020-01-01','2020-01-08','2020-01-09','2020-01-10']}}).Via(Universe11.LoadUniverse().Pack())").subscribe(lambda x: print(len(json.dumps(x))))

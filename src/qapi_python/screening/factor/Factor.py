@@ -181,7 +181,6 @@ class Endpoint:
     def time_series(self, bucket: str, measurements: List[str], fields: List[str], from_date: Union[Timestamp, str],
                     to_date: Union[Timestamp, str], tags: dict = dict({})):
 
-        return None
         data = self.__qapi.first(f"{self.__node_id}.CompositeSource(Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date: '{to_date}' }}).Via({self.__node_id}.{bucket}()))")
 
         df = DataFrame(data[1:], columns=data[0])
@@ -258,8 +257,8 @@ class FactorResult:
 
 
 class FactorActor(QapiActor.Qapi):
-    def __init__(self, endpoint, func, *_args: Any, **_kwargs: Any):
-        super().__init__(endpoint, *_args, **_kwargs)
+    def __init__(self, endpoint, endpoint_http, func, *_args: Any, **_kwargs: Any):
+        super().__init__(endpoint, endpoint_http, *_args, **_kwargs)
         self.__instance = func()
 
         self.subscribe("Request")
@@ -326,5 +325,6 @@ class FactorActor(QapiActor.Qapi):
 def factor(fn):
 
     endpoint = "127.0.0.1:5021"
+    endpoint_http = "127.0.0.1:2020"
 
-    FactorActor.start(endpoint, fn)
+    FactorActor.start(endpoint, endpoint_http, fn)
