@@ -4,7 +4,7 @@ import inspect
 import traceback
 from qapi_python.actors import Qapi as QapiActor
 from qapi_python.actors.Source import Event
-from pandas import Timestamp, DataFrame, to_datetime, melt, Series, MultiIndex
+from pandas import Timestamp, DataFrame, to_datetime, melt, Series, MultiIndex, NA
 from pytz import UTC
 from numpy import finfo, float32, nan
 from pandas.api.types import is_numeric_dtype
@@ -80,6 +80,8 @@ class DataSet:
                     self.__series[measurement+field] = series
 
             series = self.__series.get(measurement+field)
+            series = series.mask(series.apply(lambda x: isinstance(x, dict)), NA)
+            series = series.dropna()
 
             #series = Series(data=series["_value"].values, index=series["_time"].values)
             #series = series.tz_localize('UTC', level=0)
@@ -105,6 +107,7 @@ class DataSet:
             if is_numeric_dtype(series):
                 return series[series < 3.4e38]
 
+            #series = series.mask(df.apply(lambda x: isinstance(x, dict)), NA)
             return series.dropna()
         except:
             return None
@@ -148,6 +151,8 @@ class DataSet:
     def last(self, measurement: str, field: str, date: Timestamp):
         series = self.series(measurement, field, None, date)
 
+        #print(series, flush=True)
+
         if series is None or len(series.tail(1).keys()) == 0:
             return None
 
@@ -173,7 +178,7 @@ class Endpoint:
     def time_series(self, bucket: str, measurements: List[str], fields: List[str], from_date: Union[Timestamp, str],
                     to_date: Union[Timestamp, str], tags: dict = dict({})):
 
-        data = self.__qapi.first(f"Source.CompositeSource(Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date: '{to_date}' }}).Via({self.__node_id}.{bucket}()))")
+        data = self.__qapi.first(f"{self.__node_id}.CompositeSource(Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date: '{to_date}' }}).Via({self.__node_id}.{bucket}()))")
 
         df = DataFrame(data[1:], columns=data[0])
 
