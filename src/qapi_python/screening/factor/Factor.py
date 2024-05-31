@@ -1,6 +1,6 @@
 from typing import Any, List, Union
 import json
-import inspect
+import os
 import traceback
 from qapi_python.actors import Qapi as QapiActor
 from qapi_python.actors.Source import Event
@@ -324,7 +324,7 @@ class FactorActor(QapiActor.Qapi):
 
 def factor(fn):
 
-    endpoint = "127.0.0.1:5021"
-    endpoint_http = "http://127.0.0.1:2020"
+    grpc_endpoint = os.getenv('GRPC_ENDPOINT')
+    http_endpoint = os.getenv('HTTP_ENDPOINT')
 
-    FactorActor.start(endpoint, endpoint_http, fn)
+    FactorActor.start(grpc_endpoint, http_endpoint, fn)

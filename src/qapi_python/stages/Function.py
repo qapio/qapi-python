@@ -3,7 +3,7 @@ import json
 import inspect
 from qapi_python.actors import Qapi as QapiActor
 from qapi_python.actors.Source import Event
-
+import os
 
 class FlowActor(QapiActor.Qapi):
     def __init__(self, endpoint, endpoint_http, func, *_args: Any, **_kwargs: Any):
@@ -46,6 +46,7 @@ class FlowActor(QapiActor.Qapi):
 
 def function(fn):
 
-    endpoint = "127.0.0.1:5021"
-    endpoint_http = "http://127.0.0.1:2020"
-    FlowActor.start(endpoint, endpoint_http, fn)
+    grpc_endpoint = os.getenv('GRPC_ENDPOINT')
+    http_endpoint = os.getenv('HTTP_ENDPOINT')
+
+    FlowActor.start(grpc_endpoint, http_endpoint, fn)

@@ -180,5 +180,4 @@ class QapioGrpcInstance:
         return self.__manifest
 
     def dispose(self, *args, **kwargs):
-        print("DISCONNECT!")
         self.__channel.close()

@@ -36,7 +36,6 @@ class Qapi(pykka.ThreadingActor):
         self.__http_client = QapiHttpClient(endpoint_http)
 
     def on_stop(self):
-        print("BYE")
         self.__client.dispose()
 
     def source(self, expression: str, target: pykka.ActorRef):

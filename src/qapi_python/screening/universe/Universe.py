@@ -4,7 +4,7 @@ import inspect
 from qapi_python.actors import Qapi as QapiActor
 from qapi_python.actors.Source import Event
 from pandas import Timestamp
-
+import os
 
 class UniverseResult:
     def __init__(self, timestamp: Timestamp):
@@ -79,6 +79,7 @@ class UniverseActor(QapiActor.Qapi):
 
 def universe(fn):
 
-    endpoint = "127.0.0.1:5021"
-    endpoint_http = "http://127.0.0.1:2020"
-    UniverseActor.start(endpoint, endpoint_http, fn)
+    grpc_endpoint = os.getenv('GRPC_ENDPOINT')
+    http_endpoint = os.getenv('HTTP_ENDPOINT')
+
+    UniverseActor.start(grpc_endpoint, http_endpoint, fn)
