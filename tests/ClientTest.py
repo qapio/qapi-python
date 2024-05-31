@@ -62,11 +62,11 @@ if __name__ == "__main__":
     first_value = get_first_value(source)
     print(f"The first value is: {first_value}")
 
-endpoint = "127.0.0.1:5021"
+endpoint = "qapio-host:5021"
 
 
 qapi = Qapi.QapioGrpcInstance(endpoint)
-qapi2 = QapiHttpClient("http://127.0.0.1:2020")
+qapi2 = QapiHttpClient("http://qapio-host:2021")
 
 node_id = "Source"
 measurements = [random.random() for o in range(0, 50)]
