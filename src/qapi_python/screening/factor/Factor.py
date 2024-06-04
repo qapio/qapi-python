@@ -157,7 +157,7 @@ class DataSet:
             return None
 
         try:
-            last = series.tail(1)[0]
+            last = series.tail(1).iloc[0]
 
             if isinstance(last, Series):
                 print("Duplicate found.")

@@ -66,19 +66,22 @@ endpoint = "qapio-host:5021"
 
 
 qapi = Qapi.QapioGrpcInstance(endpoint)
-qapi2 = QapiHttpClient("http://qapio-host:2021")
+qapi2 = QapiHttpClient("http://localhost:2020")
 
 node_id = "Source"
-measurements = [random.random() for o in range(0, 50)]
+measurements = [random.random() for o in range(0, 500)]
 fields = ["B"]
 from_date="2020-01-01"
 to_date = "2024-01-01"
-g = f"FACTSETSQL.CompositeSource(Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date: '{to_date}' }}).Via(FACTSETSQL.prices()))"
-
-for i in range(0, 1):
+g = f"FACTSETSQL.CompositeSource(Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date: '{to_date}' }}).ViaCached(FACTSETSQL.prices(), Source.Tick(6000000), 10000000, 'UiSessionManager'))"
+gk = "FACTSETSQL.Operators.Generate(1000000)"
+n = 0
+for i in range(0, 10000):
+    #measurements.append(str(i))
+    g = f"Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date: '{to_date}' }}).Via(FACTSETSQL.prices())"
     a = qapi2.query(g)
-
-    print(a)
+    n = n + 1
+    print(len(json.dumps(a)))
 #qapi.close()
 
 #a = "Source.Operators.Generate(102400000, 1000).To(MyScreen1.Operators.Consumer())"
