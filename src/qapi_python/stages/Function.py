@@ -40,7 +40,7 @@ class FlowActor(QapiActor.Qapi):
 
         self.subscribe("Request")
 
-        self.__sink = self.get_subject("Response")
+        self.__sink = None
 
     def transmit(self, value):
 
@@ -51,6 +51,9 @@ class FlowActor(QapiActor.Qapi):
                 data = json.loads(data)
             except Exception as e:
                 print(e)
+
+        if self.__sink is None:
+            self.__sink = self.get_subject("Response")
 
         if self.__spread and isinstance(data, dict):
             ordered_args = {param: value.get(param) for param in list(self.__params.keys())}
