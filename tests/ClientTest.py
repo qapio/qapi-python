@@ -8,83 +8,84 @@ import json
 import time
 import requests
 import reactivex
-
-class QapiHttpClient:
-    def __init__(self, url: str):
-        self.__url = url
-
-    def query(self, expression: str):
-        return requests.get(f"{self.__url}/query/{expression}", verify=False).json()
-
-    def source(self, expression: str):
-
-        session = requests.Session()
-
-        return reactivex.from_iterable(session.get(
-            f"{self.__url}/source/{expression}",
-            verify=False, stream=True
-        ).iter_lines(decode_unicode=True))
-
-def get_first_value(observable):
-    # Create a container to store the result
-    result = []
-    event = threading.Event()
-
-    def on_next(value):
-        result.append(value)
-        event.set()  # Signal that the result is ready
-
-    def on_error(error):
-        result.append(error)
-        event.set()  # Signal that an error occurred
-
-    def on_completed():
-        event.set()  # Signal that the observable is completed
-
-    # Subscribe to the observable with the defined callbacks
-    observable.pipe(ops.first()).subscribe(
-        on_next=on_next,
-        on_error=on_error,
-        on_completed=on_completed
-    )
-
-    # Block until the event is set
-    event.wait()
-
-    # Return the first value or raise an error if occurred
-    if isinstance(result[0], Exception):
-        raise result[0]
-    return result[0]
-
-# Example usage
-if __name__ == "__main__":
-    source = reactivex.from_([1, 2, 3, 4, 5])
-    first_value = get_first_value(source)
-    print(f"The first value is: {first_value}")
+#
+# class QapiHttpClient:
+#     def __init__(self, url: str):
+#         self.__url = url
+#
+#     def query(self, expression: str):
+#         return requests.get(f"{self.__url}/query/{expression}", verify=False).json()["result"]
+#
+#     def source(self, expression: str):
+#
+#         session = requests.Session()
+#
+#         return reactivex.from_iterable(session.get(
+#             f"{self.__url}/source/{expression}",
+#             verify=False, stream=True
+#         ).iter_lines(decode_unicode=True))
+#
+# def get_first_value(observable):
+#     # Create a container to store the result
+#     result = []
+#     event = threading.Event()
+#
+#     def on_next(value):
+#         result.append(value)
+#         event.set()  # Signal that the result is ready
+#
+#     def on_error(error):
+#         result.append(error)
+#         event.set()  # Signal that an error occurred
+#
+#     def on_completed():
+#         event.set()  # Signal that the observable is completed
+#
+#     # Subscribe to the observable with the defined callbacks
+#     observable.pipe(ops.first()).subscribe(
+#         on_next=on_next,
+#         on_error=on_error,
+#         on_completed=on_completed
+#     )
+#
+#     # Block until the event is set
+#     event.wait()
+#
+#     # Return the first value or raise an error if occurred
+#     if isinstance(result[0], Exception):
+#         raise result[0]
+#     return result[0]
+#
+# # Example usage
+# if __name__ == "__main__":
+#     source = reactivex.from_([1, 2, 3, 4, 5])
+#     first_value = get_first_value(source)
+#     print(f"The first value is: {first_value}")
 
 endpoint = "localhost:5021"
 
 
 qapi = Qapi.QapioGrpcInstance(endpoint)
-qapi2 = QapiHttpClient("http://localhost:2020")
+#qapi2 = QapiHttpClient("http://localhost:2020")
 
-node_id = "Source"
-measurements = [random.random() for o in range(0, 200)]
-fields = ["B"]
-from_date="2020-01-01"
-to_date = "2024-01-02"
-g = f"Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date:'{to_date}' }}).Via(FACTSETSQL.prices({{}}))"
-gk = "FACTSETSQL.Operators.Generate(10000000)"
-fk = "Screen_Ui.Files.ReadAllText('Tdip.Qapio.Service.Ui.Core.db')"
-n = 0
+# node_id = "Source"
+# measurements = [random.random() for o in range(0, 200)]
+# fields = ["B"]
+# from_date="2020-01-01"
+# to_date = "2024-01-02"
+# g = f"Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date:'{to_date}' }}).Via(FACTSETSQL.prices({{}}))"
+# gk = "FACTSETSQL.Operators.Generate(10000000)"
+# fk = "Screen_Ui.Files.ReadAllText('Tdip.Qapio.Service.Ui.Core.db')"
+# n = 0
 
 start = time.time()
 
 
-a = qapi2.query(g)
-print(g)
+a = qapi.source("Source.Tick(1000).Pack2()").subscribe(lambda x: print(x))
+#print(g)
 end = time.time()
 print("BOOB!")
+print(a)
 print(end - start)
 # for i in range(0, 10000):
 #     #measurements.append(str(i))

@@ -23,7 +23,8 @@ dependencies = [
     "pandas",
     "reactivex",
     "grpcio",
-    "protobuf"
+    "protobuf",
+    "requests"
 ]
 
 [project.optional-dependencies]
