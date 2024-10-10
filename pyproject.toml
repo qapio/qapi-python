@@ -1,6 +1,19 @@
 [build-system]
 requires = ["setuptools>=61.0"]
+
 build-backend = "setuptools.build_meta"
+
+[tool.poetry]
+name = "qapi-test"
+version = "0.1.0"
+description = ""
+authors = ["Ariel Fischer <ariel.fischer@qapio.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+plum-dispatch = "^2.5.2"
+
 
 [project]
 name = "qapi_python"
