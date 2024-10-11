@@ -5,9 +5,9 @@ build-backend = "setuptools.build_meta"
 #
 [project]
 name = "qapi_python"
-#version = "0.1.0"
-#description = "Qapi Python"
-#readme = "README.rst"
+version = "0.1.0"
+description = "Qapi Python"
+readme = "README.rst"
 #authors = [
 #  {name = "Ariel Fischer", email = "ariel.fischer@qapio.com"}
 #]
