@@ -4,7 +4,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.poetry]
-name = "qapi-test"
+name = "qapi-python"
 version = "0.1.0"
 description = ""
 authors = ["Ariel Fischer <ariel.fischer@qapio.com>"]
