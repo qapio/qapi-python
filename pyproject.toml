@@ -31,6 +31,9 @@ dependencies = [
 
 [tool.poetry.dependencies]
 
+[tool.poetry]
+package-mode = false
+
 [project.optional-dependencies]
 dev = [
     "coverage",  # testing
