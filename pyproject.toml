@@ -32,6 +32,11 @@ dependencies = [
 [tool.poetry.dependencies]
 
 [tool.poetry]
+name = "qapi-python"
+version = "0.1.0"
+description = ""
+authors = ["Ariel Fischer <ariel.fischer@qapio.com>"]
+readme = "README.md"
 package-mode = false
 
 [project.optional-dependencies]
