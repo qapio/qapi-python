@@ -30,14 +30,14 @@ dependencies = [
 ]
 
 [tool.poetry.dependencies]
-typer = "*"
-pykka = "*"
-pandas = "*"
-reactivex = "*"
-grpcio = "*"
-protobuf = "*"
-requests = "*"
-annotat = "*"
+typer = "0.12.5"
+pykka = "4.0.2"
+pandas = "2.2.3"
+reactivex = "4.0.4"
+grpcio = "1.66.2"
+protobuf = "5.28.2
+requests = "2.32.3
+annotate = "1.1.1"
 
 [tool.poetry]
 name = "qapi-python"
