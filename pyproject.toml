@@ -1,50 +1,31 @@
 [build-system]
 requires = ["setuptools>=61.0"]
-
 build-backend = "setuptools.build_meta"
-#
+
 [project]
 name = "qapi_python"
 version = "0.1.0"
 description = "Qapi Python"
 readme = "README.rst"
-#authors = [
-#  {name = "Ariel Fischer", email = "ariel.fischer@qapio.com"}
-#]
-#maintainers = [
-#  {name = "Ariel Fischer", email = "ariel.fischer@qapio.com"}
-#]
-#classifiers = [
-#
-#]
-#license = {text = "MIT license"}
-#dependencies = [
-#  "typer",
-#    "pykka",
-#    "pandas",
-#    "reactivex",
-#    "grpcio",
-#    "protobuf",
-#    "requests",
-#    "annotate"
-#]
+authors = [
+  {name = "Ariel Fischer", email = "ariel.fischer@qapio.com"}
+]
+maintainers = [
+  {name = "Ariel Fischer", email = "ariel.fischer@qapio.com"}
+]
+classifiers = [
 
-[tool.poetry.dependencies]
-typer = "0.12.5"
-pykka = "4.0.2"
-pandas = "2.2.3"
-reactivex = "4.0.4"
-grpcio = "1.66.2"
-protobuf = "5.28.2"
-requests = "2.32.3"
-annotate = "1.1.1"
-
-[tool.poetry]
-name = "qapi-python"
-version = "0.1.0"
-description = ""
-authors = ["Ariel Fischer <ariel.fischer@qapio.com>"]
-readme = "README.md"
+]
+license = {text = "MIT license"}
+dependencies = [
+  "typer",
+    "pykka",
+    "pandas",
+    "reactivex",
+    "grpcio",
+    "protobuf",
+    "requests"
+]
 
 [project.optional-dependencies]
 dev = [
