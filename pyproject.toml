@@ -37,7 +37,8 @@ dependencies = [
     "reactivex",
     "grpcio",
     "protobuf",
-    "requests"
+    "requests",
+    "annotate"
 ]
 
 [project.optional-dependencies]
