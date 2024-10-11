@@ -29,6 +29,8 @@ dependencies = [
     "annotate"
 ]
 
+[tool.poetry.dependencies]
+
 [project.optional-dependencies]
 dev = [
     "coverage",  # testing
