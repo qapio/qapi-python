@@ -38,8 +38,8 @@ class FlowActor(QapiActor.Qapi):
         if len(self.__params) > 1:
             self.__spread = True
 
-        self.subscribe("Request")
-        print(self.client(), flush=True)
+        #self.subscribe("Request")
+        self.client().source(self.client().get_manifest().inlet("Request")).subscribe(lambda x: self.transmit(x))
 
 
         self.__sink = None
