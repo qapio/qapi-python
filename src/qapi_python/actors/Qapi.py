@@ -33,7 +33,11 @@ class Qapi(pykka.ThreadingActor):
     def __init__(self, endpoint: str, endpoint_http: str, *_args: Any, **_kwargs: Any):
         super().__init__(*_args, **_kwargs)
         self.__client = QapioGrpcInstance(endpoint)
+
         self.__http_client = QapiHttpClient(endpoint_http)
+
+    def client(self):
+        return self.__client
 
     def on_stop(self):
         self.__client.dispose()

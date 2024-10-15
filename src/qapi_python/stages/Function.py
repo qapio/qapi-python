@@ -41,6 +41,7 @@ class FlowActor(QapiActor.Qapi):
         self.subscribe("Request")
         print(self.__client)
 
+
         self.__sink = None
 
     def transmit(self, value):
