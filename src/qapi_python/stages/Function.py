@@ -39,7 +39,7 @@ class FlowActor(QapiActor.Qapi):
             self.__spread = True
 
         self.subscribe("Request")
-        print(self.__client)
+        print(self.client())
 
 
         self.__sink = None
