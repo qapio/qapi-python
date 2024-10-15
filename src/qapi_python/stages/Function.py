@@ -4,7 +4,7 @@ import inspect
 from qapi_python.actors import Qapi as QapiActor
 from qapi_python.actors.Source import Event
 import os
-from reactivex import operators
+from reactivex import operators, interval
 from typing import get_type_hints
 from qapi_python.client import Qapi
 import time
@@ -78,6 +78,38 @@ class FlowActor(QapiActor.Qapi):
 
 def function(fn):
 
+    sink = None
+    spread = False
+    params = inspect.signature(fn).parameters
+
+    def transmit(value, client, manifest):
+        nonlocal sink
+        data = value
+        print(value)
+        if spread and isinstance(value, str):
+            try:
+                data = json.loads(data)
+            except Exception as e:
+                print(e)
+
+        if sink is None:
+            m = manifest.outlet("Response")
+            print(m, flush=True)
+            sink = client.sink(m)
+
+        if spread and isinstance(data, dict):
+            ordered_args = {param: value.get(param) for param in list(params.keys())}
+            sink.on_next(fn(**ordered_args))
+        else:
+            if len(params) == 0:
+                sink.on_next(fn)
+            else:
+                if isinstance(data, str) and is_first_param_dict(fn):
+                    sink.on_next(fn(json.loads(data)))
+                else:
+                    print('ddd', flush=True)
+                    sink.on_next(fn(data))
+
     grpc_endpoint = os.getenv('GRPC_ENDPOINT')
     http_endpoint = os.getenv('HTTP_ENDPOINT')
 
@@ -86,8 +118,9 @@ def function(fn):
     manifest = client.get_manifest()
 
     source = client.source(manifest.inlet("Request"))
-
-    source.subscribe(lambda x: print(x))
+    variables = client.source(manifest.inlet("Variables"))
+    variables.pipe(operators.take(1), operators.compose(operators.map(lambda x: source), operators.switch_latest()),operators.with_latest_from(interval(1).pipe(operators.start_with(1)))).subscribe(lambda x: transmit(x, client, manifest))
+    #variables.pipe(operators.take(1), operators.compose(operators.map(lambda x: source), operators.switch_latest())).subscribe(lambda x: transmit(x, client, manifest))
 
     try:
         while True:

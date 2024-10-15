@@ -2,7 +2,7 @@ from google.protobuf.any_pb2 import Any
 
 import grpc
 import reactivex as rx
-from reactivex import operators as op, Observable
+from reactivex import operators as op, Observable, subject
 import json
 import base64
 from typing import Iterable
@@ -131,6 +131,7 @@ class QapioGrpcInstance:
 
     def __init__(self, endpoint: str):
         self.__manifest = None
+        self.__subs = {}
         self.__session_id = str(uuid.uuid4())
         self.__principal_id = self.__session_id
         self.__channel = channel = grpc.insecure_channel(endpoint)
@@ -149,6 +150,12 @@ class QapioGrpcInstance:
         self.__channel.close()
 
     def source(self, expression: str, s=None) -> Observable:
+
+        existing = self.__subs.get(expression)
+
+        if existing is not None:
+            return existing
+
         args = qapi_pb2.SourceRequest(expression=expression)
         timeout = None
 
@@ -157,7 +164,15 @@ class QapioGrpcInstance:
         if self.__manifest is not None:
             timeout = self.__manifest.deadline()
 
-        return concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)], timeout=timeout))).pipe(op.subscribe_on(s))
+        sub = subject.ReplaySubject(1)
+
+        s = concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)], timeout=timeout))).pipe(op.subscribe_on(s))
+
+        s.subscribe(sub)
+
+        self.__subs[expression] = sub
+
+        return sub
 
     def first(self, expression: str):
         return self.source(expression+".Take(1)", EventLoopScheduler()).run()
