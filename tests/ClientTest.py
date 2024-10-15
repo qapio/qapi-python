@@ -1,14 +1,9 @@
-import random
 
-from src.qapi_python.client import Qapi
-import reactivex
-from reactivex import operators as ops
-import threading
-import json
+from reactivex import operators, interval
+from qapi_python.client import Qapi
+
 import time
-import requests
-import reactivex
-#
+
 # class QapiHttpClient:
 #     def __init__(self, url: str):
 #         self.__url = url
@@ -78,43 +73,13 @@ qapi = Qapi.QapioGrpcInstance(endpoint)
 # fk = "Screen_Ui.Files.ReadAllText('Tdip.Qapio.Service.Ui.Core.db')"
 # n = 0
 
-start = time.time()
 
 
-a = qapi.source("Source.Tick(1000).Pack2()").subscribe(lambda x: print(x))
-#print(g)
-end = time.time()
-print("BOOB!")
-print(a)
-print(end - start)
-# for i in range(0, 10000):
-#     #measurements.append(str(i))
-#     g = f"Source.Single({{measurements: {json.dumps(measurements)}, fields: {json.dumps(fields)}, from_date: '{from_date}', to_date: '{to_date}' }}).ViaCached(FACTSETSQL.prices(), Source.Tick(30000).Skip(1), 200, 'UiSessonManager')"
-#     a = qapi.first(gk)
-#     n = n + 1
-#     print(len(json.dumps(a)))
-#qapi.close()
-
-#a = "Source.Operators.Generate(102400000, 1000).To(MyScreen1.Operators.Consumer())"
-#qapi.source(f"Source.Single({{Guid: '{uuid.uuid4()}', Dates: ['2020-01-01','2020-01-02','2020-01-03','2020-01-04','2020-01-05','2020-01-06','2020-01-07','2020-01-01','2020-01-08','2020-01-09','2020-01-10']}}).Via(Universe11.LoadUniverse().Pack())").subscribe(lambda x: print(len(json.dumps(x))))
-#qapi.source("Universe11.LoadUniverse2(10)").subscribe(lambda x: print(len(json.dumps(x))))
+a = qapi.source("Source.Tick(1000)").pipe(operators.take(1), operators.compose(operators.map(lambda x: qapi.source("Source.Tick(1500)")), operators.switch_latest())).subscribe(lambda x: print(x))
 
 
-#def count(acc, i):
-#    return acc+len(i)/1000000
-
-#qapi.source(a).pipe(operators.scan(count, 0)).subscribe(lambda x: print(x))
-# sink = qapi.sink("ddd")
-#
-# def transmit(c):
-#     data = []
-#     for i in range(0, 10000):
-#         print(i)
-#         sink.on_next(c)
-#         #data.append(c)
-#     #sink.on_next(data)
-#
-#
-#
-#
-# qapi.close()
+try:
+    while True:
+        time.sleep(1)  # Keep the program running and alive
+except KeyboardInterrupt:
+    print("Program terminated.")

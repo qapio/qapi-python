@@ -1,26 +1,14 @@
-from annotate import annotate
+from reactivex import operators, interval, compose
+import time
 
-@annotate('before')
-def load_data(context):
-    return "A"
+interval(0.1).pipe(operators.take(1), compose(operators.map(lambda x: interval(0.5)), operators.switch_latest())).subscribe(lambda t: print(t, flush=True))
 
-@annotate('before')
-def load_data1(context):
-    return "V"
 
-@annotate('before')
-def load_data2(context):
-    return "V"
+run = True
 
-@annotate('before')
-def load_data3(context):
-    return "FG"
-
-@annotate('after')
-def write_data(context):
-    return context
-
-@annotate('factor', rule=1, order='desc')
-def price_book(ticker, date, context):
-    print(ticker+date)
-    return {}
+try:
+    while run:
+        time.sleep(1)  # Keep the program running and alive
+except KeyboardInterrupt:
+    print("Program terminated.")
+    run = False

@@ -4,9 +4,10 @@ import inspect
 from qapi_python.actors import Qapi as QapiActor
 from qapi_python.actors.Source import Event
 import os
+from reactivex import operators
 from typing import get_type_hints
-
-
+from qapi_python.client import Qapi
+import time
 def is_first_param_dict(func):
     # Get the signature of the function
     sig = inspect.signature(func)
@@ -39,7 +40,7 @@ class FlowActor(QapiActor.Qapi):
             self.__spread = True
 
         #self.subscribe("Request")
-        self.client().source(self.client().get_manifest().inlet("Request")).subscribe(lambda x: self.transmit(x))
+        self.client().source(self.client().get_manifest().inlet("Variables").pipe(operators.take(1), operators.switch_latest(lambda x: self.client().source(self.client().get_manifest().inlet("Request"))))).subscribe(lambda x: self.transmit(x))
 
 
         self.__sink = None
@@ -80,4 +81,16 @@ def function(fn):
     grpc_endpoint = os.getenv('GRPC_ENDPOINT')
     http_endpoint = os.getenv('HTTP_ENDPOINT')
 
-    FlowActor.start(grpc_endpoint, http_endpoint, fn)
+    client = Qapi.QapioGrpcInstance(grpc_endpoint)
+
+    manifest = client.get_manifest()
+
+    source = client.source(manifest.inlet("Request"))
+
+    source.subscribe(lambda x: print(x))
+
+    try:
+        while True:
+            time.sleep(1)  # Keep the program running and alive
+    except KeyboardInterrupt:
+        print("Program terminated.")
