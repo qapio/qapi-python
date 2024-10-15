@@ -119,7 +119,7 @@ def function(fn):
 
     source = client.source(manifest.inlet("Request"))
     variables = client.source(manifest.inlet("Variables"))
-    variables.pipe(operators.take(1), operators.compose(operators.map(lambda x: source), operators.switch_latest()),operators.with_latest_from(interval(1).pipe(operators.start_with(1)))).subscribe(lambda x: transmit(x, client, manifest))
+    variables.pipe(operators.take(1), operators.compose(operators.map(lambda x: source), operators.switch_latest()),operators.with_latest_from(variables)).subscribe(lambda x: transmit(x, client, manifest))
     #variables.pipe(operators.take(1), operators.compose(operators.map(lambda x: source), operators.switch_latest())).subscribe(lambda x: transmit(x, client, manifest))
 
     try:

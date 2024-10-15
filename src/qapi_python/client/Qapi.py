@@ -164,7 +164,7 @@ class QapioGrpcInstance:
         if self.__manifest is not None:
             timeout = self.__manifest.deadline()
 
-        sub = subject.ReplaySubject(1)
+        sub = subject.ReplaySubject(1, scheduler=ThreadPoolScheduler())
 
         s = concat_map(rx.from_iterable(self.__stub.Source(args, metadata=[('session_id', self.__session_id), ('principal_id', self.__principal_id)], timeout=timeout))).pipe(op.subscribe_on(s))
 
