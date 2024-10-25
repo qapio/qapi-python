@@ -8,6 +8,7 @@ from reactivex import operators, interval
 from typing import get_type_hints
 from qapi_python.client import Qapi
 import time
+
 def is_first_param_dict(func):
     # Get the signature of the function
     sig = inspect.signature(func)
@@ -29,64 +30,32 @@ def is_first_param_dict(func):
     return type_hints.get(first_param.name) == dict
 
 
-class FlowActor(QapiActor.Qapi):
-    def __init__(self, endpoint, endpoint_http, func, *_args: Any, **_kwargs: Any):
-        super().__init__(endpoint, endpoint_http, *_args, **_kwargs)
-        self.__function = func
-        self.__params = inspect.signature(self.__function).parameters
-        self.__spread = False
-
-        if len(self.__params) > 1:
-            self.__spread = True
-
-        #self.subscribe("Request")
-        self.client().source(self.client().get_manifest().inlet("Variables").pipe(operators.take(1), operators.switch_latest(lambda x: self.client().source(self.client().get_manifest().inlet("Request"))))).subscribe(lambda x: self.transmit(x))
-
-
-        self.__sink = None
-
-    def transmit(self, value):
-
-        data = value
-
-        if self.__spread and isinstance(value, str):
-            try:
-                data = json.loads(data)
-            except Exception as e:
-                print(e)
-
-        if self.__sink is None:
-            self.__sink = self.get_subject("Response")
-
-        if self.__spread and isinstance(data, dict):
-            ordered_args = {param: value.get(param) for param in list(self.__params.keys())}
-            self.__sink.on_next(self.__function(**ordered_args))
-        else:
-            if len(self.__params) == 0:
-                self.__sink.on_next(self.__function())
-            else:
-                if isinstance(data, str) and is_first_param_dict(self.__function):
-                    self.__sink.on_next(self.__function(json.loads(data)))
-                else:
-                    self.__sink.on_next(self.__function(data))
-
-    def on_receive(self, message: Event) -> Any:
-
-        if message.inlet == "Request":
-            self.transmit(message.value)
-
-
-def function(fn):
+def function(fn, map_reduce):
 
     sink = None
     spread = False
-    params = inspect.signature(fn).parameters
+
+    op = None
+    json_value = None
+    config = None
+    params = None
 
     def transmit(value, client, manifest):
-        nonlocal sink
-        data = value
-        print(value)
-        if spread and isinstance(value, str):
+        nonlocal sink, op, json_value, config, params
+        data = value[0]
+
+        if op is None:
+            op = fn(value[1])
+            config = value[1]
+            json_value = json.dumps(value[1])
+            params = inspect.signature(op).parameters
+        else:
+            config = value[1]
+            if json_value == json.dumps(value[1]):
+                op = fn(value[1])
+                json_value = json.dumps(value[1])
+
+        if spread and isinstance(data, str):
             try:
                 data = json.loads(data)
             except Exception as e:
@@ -94,26 +63,21 @@ def function(fn):
 
         if sink is None:
             m = manifest.outlet("Response")
-            print(m, flush=True)
             sink = client.sink(m)
 
         if spread and isinstance(data, dict):
             ordered_args = {param: value.get(param) for param in list(params.keys())}
-            sink.on_next(fn(**ordered_args))
+            sink.on_next(map_reduce(ordered_args, config, lambda x: op(**x)))
         else:
             if len(params) == 0:
-                sink.on_next(fn)
+                sink.on_next(map_reduce(data, config, op))
             else:
-                if isinstance(data, str) and is_first_param_dict(fn):
-                    sink.on_next(fn(json.loads(data)))
+                if isinstance(data, str) and is_first_param_dict(op):
+                    sink.on_next(map_reduce(json.loads(data), config, op))
                 else:
-                    print('ddd', flush=True)
-                    sink.on_next(fn(data))
+                    sink.on_next(map_reduce(data, config, op))
 
-    grpc_endpoint = os.getenv('GRPC_ENDPOINT')
-    http_endpoint = os.getenv('HTTP_ENDPOINT')
-
-    client = Qapi.QapioGrpcInstance(grpc_endpoint)
+    client = Qapi.QapioGrpcInstance("localhost:5021")
 
     manifest = client.get_manifest()
 
