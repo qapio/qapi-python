@@ -5,6 +5,7 @@ from reactivex import operators, Observable
 from dataclasses import dataclass
 import base64
 from typing import List, Optional, Any, Tuple
+from box import Box
 
 def assemble_chunks(collected_chunks: List[bytes]) -> Any:
     # Calculate total buffer size
@@ -21,7 +22,12 @@ def assemble_chunks(collected_chunks: List[bytes]) -> Any:
 
     # Convert to UTF-8 string and parse as JSON
     decoded_string = bytes_data.decode("utf-8")
-    return json.loads(decoded_string)
+    data = json.loads(decoded_string)
+
+    if isinstance(data, dict):
+        return Box(data)
+
+    return data
 
 
 def assembler(chunk: Observable) -> Observable:
@@ -60,7 +66,12 @@ class Qapi:
         self.__url = url
 
     def query(self, expression: str):
-        return requests.get(f"{self.__url}/query/{expression}").json()
+        data = requests.get(f"{self.__url}/query/{expression}").json()
+
+        if isinstance(data, dict):
+            return Box(data)
+
+        return data
 
     def source(self, expression: str):
 
