@@ -25,7 +25,8 @@ dependencies = [
     "grpcio",
     "protobuf",
     "requests",
-    "annotate"
+    "annotate",
+    "python-box[all]"
 ]
 
 [project.optional-dependencies]
