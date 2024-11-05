@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import base64
 from typing import List, Optional, Any, Tuple
 from box import Box
-
+import pickle
 def assemble_chunks(collected_chunks: List[bytes]) -> Any:
     # Calculate total buffer size
     buffer_size = sum(len(chunk) for chunk in collected_chunks)
@@ -69,6 +69,9 @@ class Qapi:
         data = requests.get(f"{self.__url}/query/{expression}").json()
 
         if isinstance(data, dict):
+            if '__type' in data.keys():
+                if data['__type'] == "pickle":
+                    return pickle.loads(base64.b64decode(data['data']))
             return Box(data)
 
         return data
