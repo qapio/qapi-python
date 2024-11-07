@@ -65,14 +65,24 @@ class Qapi:
     def __init__(self, url: str):
         self.__url = url
 
+
+    def enhance(self, value):
+        if isinstance(value, dict):
+            if '__type' in value.keys():
+                if value['__type'] == "pickle":
+                    return pickle.loads(base64.b64decode(value['data']))
+            else:
+                return Box(value)
+        return value
+
     def query(self, expression: str):
         data = requests.get(f"{self.__url}/query/{expression}").json()
 
+        if isinstance(data, list):
+            return [self.enhance(m) for m in data]
+
         if isinstance(data, dict):
-            if '__type' in data.keys():
-                if data['__type'] == "pickle":
-                    return pickle.loads(base64.b64decode(data['data']))
-            return Box(data)
+            return self.enhance(data)
 
         return data
 
