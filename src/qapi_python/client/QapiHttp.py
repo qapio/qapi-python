@@ -30,6 +30,12 @@ class DatasetBuilder:
 
         return self
 
+    def Query(self, key, expression):
+
+        self.__items.append({'key': key, 'expression': expression})
+
+        return self
+
     def GetExpression(self):
         queries = [item['expression'] for item in self.__items]
         return f"Source.CombineFirst({','.join(queries)})"
