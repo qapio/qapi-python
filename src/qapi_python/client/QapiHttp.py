@@ -46,7 +46,7 @@ class DatasetBuilder:
         result = {}
 
         for idx, value in enumerate(data):
-            result[self.__items[idx]['key']] = value.TimeSeries
+            result[self.__items[idx]['key']] = value
 
         return Box(result)
 
