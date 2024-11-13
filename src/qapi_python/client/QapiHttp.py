@@ -26,13 +26,13 @@ class DatasetBuilder:
         if isinstance(to_date, str):
             to_date = Timestamp(to_date, tz="utc")
 
-        self.__items.append({'key': key, 'expression': f"{endpoint}({json.dumps({'measurements': measurements, 'fields': fields, 'fromDate': from_date.strftime('%Y-%m-%dT%H:%M:%SZ'), 'toDate': to_date.strftime('%Y-%m-%dT%H:%M:%SZ'), 'bucket': bucket})})"})
+        self.__items.append({'key': key, 'type': 'timeseries', 'expression': f"{endpoint}({json.dumps({'measurements': measurements, 'fields': fields, 'fromDate': from_date.strftime('%Y-%m-%dT%H:%M:%SZ'), 'toDate': to_date.strftime('%Y-%m-%dT%H:%M:%SZ'), 'bucket': bucket})})"})
 
         return self
 
     def Query(self, key, expression):
 
-        self.__items.append({'key': key, 'expression': expression})
+        self.__items.append({'key': key, 'type': 'query', 'expression': expression})
 
         return self
 
@@ -46,6 +46,9 @@ class DatasetBuilder:
         result = {}
 
         for idx, value in enumerate(data):
+            if self.__items[idx]['type'] == "timeseries":
+                value = value.TimeSeries
+
             result[self.__items[idx]['key']] = value
 
         return Box(result)
