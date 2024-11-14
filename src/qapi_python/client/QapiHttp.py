@@ -26,7 +26,7 @@ class DatasetBuilder:
         if isinstance(to_date, str):
             to_date = Timestamp(to_date, tz="utc")
 
-        self.__items.append({'key': key, 'type': 'timeseries', 'expression': f"Source.Single({json.dumps({'measurements': measurements, 'fields': fields, 'fromDate': from_date.strftime('%Y-%m-%dT%H:%M:%SZ'), 'toDate': to_date.strftime('%Y-%m-%dT%H:%M:%SZ'), 'bucket': bucket})}).Via({endpoint}({{concurrency: 6, keepAlive: true}}))"})
+        self.__items.append({'key': key, 'type': 'timeseries', 'expression': f"Source.Single({json.dumps({'measurements': measurements, 'fields': fields, 'fromDate': from_date.strftime('%Y-%m-%dT%H:%M:%SZ'), 'toDate': to_date.strftime('%Y-%m-%dT%H:%M:%SZ'), 'bucket': bucket})}).Via({endpoint}())"})
 
         return self
 
