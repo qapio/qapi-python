@@ -270,6 +270,9 @@ class Qapi:
     def DatasetBuilder(self):
         return DatasetBuilder(self)
 
+    def TimeSeries(self, endpoint, bucket, measurements, fields, from_date, to_date):
+        data = self.DatasetBuilder().AddTimeSeries("Single", endpoint, bucket, measurements, fields, from_date, to_date).Load()
+        return data.Single
 
     def source(self, expression: str):
 
