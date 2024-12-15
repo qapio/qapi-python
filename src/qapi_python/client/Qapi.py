@@ -37,6 +37,8 @@ class Manifest:
     def deadline(self):
         return self.__raw["deadline"]
 
+    def environment(self):
+        return self.__raw["environment"]
 
 def assemble_chunks(collected_chunks) -> object:
     buffer_size = sum(len(bytes(chunk)) for chunk in collected_chunks)
