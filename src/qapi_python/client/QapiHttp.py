@@ -12,6 +12,12 @@ import pandas as pd
 from pandas import Timestamp
 from numpy import finfo, float32, nan
 from pandas.api.types import is_numeric_dtype
+from reactivex.scheduler import ThreadPoolScheduler
+import multiprocessing
+
+optimal_thread_count = multiprocessing.cpu_count()
+
+scheduler = ThreadPoolScheduler(optimal_thread_count)
 
 class DatasetBuilder:
     def __init__(self, client):
@@ -295,7 +301,7 @@ class Qapi:
         return reactivex.from_iterable(session.get(
             f"{self.__url}/source/{expression}",
             verify=False, stream=True
-        ).iter_lines(decode_unicode=True)).pipe(
+        ).iter_lines(decode_unicode=True), scheduler).pipe(
             operators.scan(partition, ([], None)),
             operators.filter(lambda x: x[1] is not None),
             operators.map(lambda t: t[1]),
