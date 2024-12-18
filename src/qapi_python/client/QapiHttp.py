@@ -1,7 +1,7 @@
 import json
 import requests
 import reactivex
-from reactivex import operators, Observable
+from reactivex import operators, Observable, defer
 from dataclasses import dataclass
 from typing import List, Optional, Any, Tuple
 from reactivex import operators
@@ -298,7 +298,7 @@ class Qapi:
             print(p)
             return p
 
-        return reactivex.from_iterable(session.get(
+        return defer(lambda x: reactivex.from_iterable(session.get(
             f"{self.__url}/source/{expression}",
             verify=False, stream=True
         ).iter_lines(decode_unicode=True), scheduler).pipe(
@@ -306,4 +306,4 @@ class Qapi:
             operators.filter(lambda x: x[1] is not None),
             operators.map(lambda t: t[1]),
             assembler
-        )
+        ))
