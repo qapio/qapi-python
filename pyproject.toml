@@ -25,6 +25,7 @@ dependencies = [
     "grpcio",
     "protobuf",
     "requests",
+    "pydantic",
     "annotate",
     "python-box[all]"
 ]
